@@ -1,0 +1,8 @@
+{
+  "description": "医法智联合成数据演示",
+  "miniprogramRoot": "./",
+  "compileType": "miniprogram",
+  "appid": "touristappid",
+  "projectname": "yifa-zhilian-demo",
+  "setting": {"es6": true, "urlCheck": false}
+}

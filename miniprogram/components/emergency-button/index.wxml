@@ -1,0 +1,7 @@
+<view class="emergency">
+  <view class="heading">需要医护帮助</view>
+  <button class="sos" bindtouchstart="start" bindtouchend="cancel" bindtouchcancel="cancel" disabled="{{busy}}">{{holding ? '继续按住…' : '长按 1.2 秒演示呼叫'}}</button>
+  <view class="status">{{status}}</view>
+  <button wx:if="{{retryAvailable}}" bindtap="retry" disabled="{{busy}}">重试同一事件</button>
+  <view class="hint">这是演示，不会通知医护或拨打电话。真实紧急情况请使用床旁呼叫器或请身边人协助。</view>
+</view>

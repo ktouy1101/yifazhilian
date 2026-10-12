@@ -1,0 +1,1 @@
+<view class="page"><view class="notice">路线占位演示；请以医院现场标识和医护指引为准。</view><view class="title">院内导诊</view><button wx:for="{{departments}}" wx:key="*this" data-name="{{item}}" bindtap="choose">{{item}}</button><view wx:if="{{selected}}" class="card">已选择 {{selected}}。待接入院方审核的楼层图与无障碍路线。</view><button bindtap="volunteer">查看志愿者端规划</button></view>

@@ -1,0 +1,9 @@
+<view class="page">
+  <view class="notice">学生演示 · 全部为虚构数据 · 无真实诊疗与呼叫服务</view>
+  <view class="card"><view class="title">王*兰，您好</view><view>女 · 72 岁 · 心内科 12 床</view><view>过敏提示：青霉素（虚构）</view><view class="small">家属：李女士（女儿，虚构）</view></view>
+  <button wx:if="{{!loggedIn}}" class="primary" bindtap="login">进入合成数据演示</button>
+  <view wx:else class="small">已进入演示；需在“我的”单独授权后使用问答。</view>
+  <view class="card"><view class="title">健康数据示例</view><view>心率 78 次/分 · 血氧 97%</view><view>血压 128/76 mmHg</view><view class="small">来源：演示数据；非实时监测，不作临床判断。</view></view>
+  <button class="primary" bindtap="chat">AI 健康助手</button><button bindtap="settings">管理我的授权</button>
+  <emergency-button />
+</view>

@@ -1,0 +1,4 @@
+.emergency { border: 3rpx solid #ae2339; border-radius: 20rpx; padding: 24rpx; margin-top: 28rpx; background: #fff; }
+.heading { font-size: 40rpx; font-weight: bold; }
+.sos { min-height: 110rpx; background: #ae2339; color: white; font-size: 36rpx; }
+.hint, .status { font-size: 30rpx; line-height: 1.6; }

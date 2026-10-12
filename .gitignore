@@ -1,0 +1,22 @@
+# Local material, credentials, and patient data never belong in Git.
+.work/
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.db
+*.db-*
+*.sqlite*
+*.log
+uploads/
+private-data/
+data/
+models/
+node_modules/
+miniprogram_npm/
+project.private.config.json
+.DS_Store
+Thumbs.db

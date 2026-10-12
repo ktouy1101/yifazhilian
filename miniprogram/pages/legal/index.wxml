@@ -1,0 +1,1 @@
+<view class="page"><view class="title">患者权益保护</view><view class="card">先看懂依据，再决定下一步。问答应显示法条来源、有效版本和可核验链接。</view><button class="primary" bindtap="chat">询问法律助手</button><button bindtap="draft">知情同意书功能说明</button><view class="notice">个案责任须结合事实和证据判断；本演示未对接律师。</view></view>

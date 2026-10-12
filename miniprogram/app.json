@@ -1,0 +1,15 @@
+{
+  "pages": ["pages/home/index", "pages/chat/index", "pages/navigation/index", "pages/legal/index", "pages/profile/index"],
+  "window": {"navigationBarTitleText": "医法智联 · 演示", "navigationBarBackgroundColor": "#0e7c86", "navigationBarTextStyle": "white", "backgroundColor": "#f4f8f8"},
+  "tabBar": {
+    "color": "#516168", "selectedColor": "#086d76",
+    "list": [
+      {"pagePath": "pages/home/index", "text": "健康"},
+      {"pagePath": "pages/navigation/index", "text": "导诊"},
+      {"pagePath": "pages/legal/index", "text": "法援"},
+      {"pagePath": "pages/profile/index", "text": "我的"}
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

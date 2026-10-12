@@ -1,0 +1,11 @@
+<view class="page">
+  <view class="notice">本地检索与规则回复。请勿输入真实患者资料；不提供诊断、处方或个案法律结论。</view>
+  <view class="title">{{domain === 'medical' ? 'AI 健康助手' : 'AI 法律助手'}}</view>
+  <button bindtap="switchDomain" disabled="{{busy}}">切换到{{domain === 'medical' ? '法律' : '健康'}}问答（新建会话）</button>
+  <view wx:for="{{messages}}" wx:key="index" class="card">
+    <view class="message">您：{{item.question}}</view><view class="message">助手：{{item.answer}}</view>
+    <view wx:for="{{item.sources}}" wx:for-item="source" wx:key="id" class="small">依据：{{source.title}} {{source.text}}</view><view class="small">{{item.disclaimer}}</view>
+  </view>
+  <textarea value="{{text}}" bindinput="onInput" maxlength="500" placeholder="例如：如何申请复制病历？" />
+  <button class="primary" bindtap="send" loading="{{busy}}" disabled="{{busy}}">发送</button>
+</view>
