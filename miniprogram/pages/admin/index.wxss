@@ -1,0 +1,22 @@
+.admin-page { min-height: 100vh; padding: 24rpx 28rpx 60rpx; box-sizing: border-box; background: #F3F8F9; }
+.admin-head { padding: 8rpx 4rpx 20rpx; }
+.admin-title { font-size: 34rpx; font-weight: 600; color: #17343A; }
+.admin-sub { margin-top: 8rpx; font-size: 23rpx; line-height: 1.6; color: #5B737A; }
+.admin-group { margin-top: 12rpx; padding: 8rpx 24rpx; border-radius: 20rpx; background: #FFFFFF; }
+.admin-group-title { padding: 18rpx 0 6rpx; font-size: 22rpx; letter-spacing: 1rpx; color: #7A8F95; }
+.admin-row { display: flex; align-items: center; padding: 20rpx 0; border-top: 2rpx solid #EDF3F4; }
+.admin-row:first-of-type { border-top: none; }
+.admin-row-main { flex: 1; min-width: 0; }
+.admin-row-title { font-size: 27rpx; color: #1F3B42; }
+.admin-row-detail { margin-top: 6rpx; font-size: 22rpx; line-height: 1.5; color: #6B8288; }
+.admin-row-stage { flex: none; margin-left: 16rpx; padding: 4rpx 14rpx; border-radius: 20rpx; background: #E4F4EE; color: #0A5A61; font-size: 20rpx; }
+.admin-actions { display: flex; flex-direction: column; flex: none; gap: 8rpx; margin-left: 14rpx; }
+.admin-btn { margin: 0; width: 120rpx; padding: 0; height: 56rpx; line-height: 56rpx; font-size: 22rpx; border-radius: 12rpx; }
+.admin-row-stack { flex-direction: column; align-items: stretch; }
+.admin-row-stack .admin-actions { flex-direction: row; margin: 14rpx 0 0; gap: 12rpx; }
+.admin-row-stack .admin-btn { flex: 1; width: auto; }
+.admin-row-detail { word-break: break-all; }
+.admin-btn::after { border: none; }
+.admin-btn.approve { background: #0E7C86; color: #fff; }
+.admin-btn.reject { background: #F1F7F7; color: #51686F; border: 2rpx solid #DCEAEC; }
+.admin-note { margin-top: 22rpx; padding: 0 6rpx; font-size: 21rpx; line-height: 1.6; color: #7A8F95; }

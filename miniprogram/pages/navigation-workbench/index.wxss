@@ -1,0 +1,38 @@
+.list-row { display:flex; align-items:center; gap:18rpx; padding:22rpx 0; border-bottom:1rpx solid #E2ECEE; }
+.list-row:last-child { border-bottom:0; }
+.row-title { font-size:28rpx; font-weight:600; margin-bottom:4rpx; }
+.chev { width:28rpx; height:28rpx; }
+.empty { color:#8AA0A6; padding:24rpx 0; font-size:25rpx; }
+.task-text { flex:1; min-width:0; }
+.workbench button.outline-button { font-size:25rpx; padding:18rpx 22rpx; min-height:88rpx; color:#0A5A61; background:#EDF8F8; border-radius:18rpx; flex-shrink:0; }
+.error { color:#A33229; font-size:26rpx; margin:12rpx 0; }
+.workbench { padding:20rpx 32rpx 48rpx; }
+.workbench-heading { display:flex; align-items:center; justify-content:space-between; gap:20rpx; padding:0 4rpx; margin-bottom:24rpx; }
+.page-title { font-size:38rpx; font-weight:700; }
+.environment { border:2rpx solid #C9DFE1; border-radius:12rpx; color:#51686F; font-size:22rpx; padding:4rpx 12rpx; flex-shrink:0; }
+.workbench .card { padding:28rpx; border-radius:30rpx; }
+.picker-heading { display:flex; align-items:center; justify-content:space-between; gap:16rpx; }
+.picker-title { font-size:32rpx; font-weight:700; }
+.picker-description { color:#51686F; font-size:25rpx; line-height:1.7; margin:10rpx 0 24rpx; }
+.account-option { display:flex; align-items:center; gap:20rpx; padding:22rpx 20rpx; min-height:156rpx; border:2rpx solid #D8E5E7; border-radius:24rpx; background:#FFF; margin-bottom:16rpx; }
+.account-option.selected { border-color:#0E7C86; background:#EDF7F7; }
+.account-icon { width:68rpx; height:68rpx; flex-shrink:0; border-radius:20rpx; background:#E2F2F3; display:flex; align-items:center; justify-content:center; }
+.account-icon image { width:36rpx; height:36rpx; }
+.account-copy { flex:1; min-width:0; }
+.account-title { font-size:29rpx; font-weight:600; line-height:1.5; }
+.account-name { color:#51686F; font-size:25rpx; font-weight:400; margin-left:16rpx; }
+.account-description { font-size:24rpx; color:#51686F; line-height:1.6; margin-top:6rpx; }
+.account-option radio { flex-shrink:0; }
+.workbench button.primary-action { display:flex; align-items:center; justify-content:center; width:100%; min-height:96rpx; padding:22rpx 24rpx; margin-top:24rpx; color:#FFF; background:#0E7C86; border-radius:22rpx; font-size:29rpx; font-weight:600; line-height:1.5; }
+.workbench button.text-button { display:inline-flex; align-items:center; justify-content:center; min-height:88rpx; padding:14rpx 8rpx; color:#0A5A61; font-size:25rpx; background:transparent; flex-shrink:0; }
+.secondary-actions { display:flex; justify-content:space-between; align-items:center; gap:16rpx; margin-top:8rpx; }
+.test-caption { font-size:22rpx; color:#51686F; line-height:1.65; text-align:center; padding-top:16rpx; border-top:2rpx solid #E2ECEE; }
+.legacy-title { font-size:25rpx; color:#51686F; margin:24rpx 0 14rpx; }
+.legacy-option { min-height:128rpx; }
+.current-account-top { display:flex; align-items:center; justify-content:space-between; gap:16rpx; }
+.current-label { color:#51686F; font-size:24rpx; }
+.current-name { display:flex; align-items:center; gap:14rpx; flex-wrap:wrap; font-size:31rpx; font-weight:700; }
+.role-badge { font-size:22rpx; font-weight:500; padding:4rpx 14rpx; border-radius:12rpx; background:#E2F2F3; color:#0A5A61; }
+.current-hint { color:#51686F; font-size:25rpx; line-height:1.7; margin-top:16rpx; }
+.inline-error { color:#9E3028; background:#FFF0EE; padding:18rpx; border-radius:16rpx; margin-top:18rpx; font-size:25rpx; }
+.loading-card { color:#51686F; font-size:27rpx; }

@@ -1,9 +1,215 @@
-<view class="page">
-  <view class="notice">学生演示 · 全部为虚构数据 · 无真实诊疗与呼叫服务</view>
-  <view class="card"><view class="title">王*兰，您好</view><view>女 · 72 岁 · 心内科 12 床</view><view>过敏提示：青霉素（虚构）</view><view class="small">家属：李女士（女儿，虚构）</view></view>
-  <button wx:if="{{!loggedIn}}" class="primary" bindtap="login">进入合成数据演示</button>
-  <view wx:else class="small">已进入演示；需在“我的”单独授权后使用问答。</view>
-  <view class="card"><view class="title">健康数据示例</view><view>心率 78 次/分 · 血氧 97%</view><view>血压 128/76 mmHg</view><view class="small">来源：演示数据；非实时监测，不作临床判断。</view></view>
-  <button class="primary" bindtap="chat">AI 健康助手</button><button bindtap="settings">管理我的授权</button>
-  <emergency-button />
+<app-header/>
+<view class="page health-page">
+  <view class="hero">
+    <view class="section-row"><view class="eyebrow">每一天，照顾好自己</view><button wx:if="{{active}}" class="text-button" bindtap="refresh" disabled="{{busy || loading}}">刷新</button></view>
+    <view class="hero-title">我的健康</view>
+    <view class="hero-copy">整理病历资料，记录身体变化与每日用药</view>
+    <view class="hero-tag">病历资料 · 健康记录 · 用药计划</view>
+    <view wx:if="{{active && accessUntil}}" class="access-note">已授权 · 本机保存 · 有效至 {{accessUntil}}</view>
+  </view>
+  <view wx:if="{{careAlert}}" class="care-alert {{careAlert.level}}">
+    <view class="care-alert-title">{{careAlert.title}}</view>
+    <view class="care-alert-copy">{{careAlert.text}}</view>
+    <button class="care-alert-action" data-kind="{{careAlert.kind}}" bindtap="openCareChat">{{careAlert.action}}</button>
+  </view>
+  <view class="tabs">
+    <button class="tab {{tab === 'plans' ? 'selected' : ''}}" data-tab="plans" bindtap="switchTab">用药计划</button>
+    <button class="tab {{tab === 'status' ? 'selected' : ''}}" data-tab="status" bindtap="switchTab">健康状况</button>
+  </view>
+  <view wx:if="{{error}}" class="error-box">{{error}}<button class="small-button" bindtap="refresh" disabled="{{busy}}">重新加载</button></view>
+  <view wx:if="{{loading}}" class="empty">正在读取记录…</view>
+  <view wx:elif="{{!loggedIn}}" class="card welcome">
+    <view class="section-title">从一条记录开始</view>
+    <view class="muted">登录后，可保存身体感受、测量结果与服药记录。</view>
+    <button class="primary-button" bindtap="login">去登录</button>
+  </view>
+  <view wx:elif="{{!active}}" class="card welcome">
+    <view class="section-title">你的健康记录，由你管理</view>
+    <view class="muted">使用前请阅读数据用途与保存说明。你可以在“我的 → 隐私与授权”撤回授权。</view>
+    <button class="primary-button" bindtap="authorize" loading="{{busy}}" disabled="{{busy}}">查看告知并授权</button>
+  </view>
+  <block wx:else>
+    <block wx:if="{{tab === 'status'}}">
+      <view class="section-row"><view class="section-title">最近一次就诊 / 检查资料</view><button class="text-button" bindtap="openRecordDocuments">全部资料</button></view>
+      <view wx:if="{{latestRecord}}" class="card visit-card">
+        <view class="section-row"><text class="item-title">{{latestRecord.title || '检查资料'}}</text><text class="status">{{latestRecord.record_type || '资料'}}</text></view>
+        <view class="muted">{{latestRecord.dateLabel}} · {{latestRecord.institution || '机构未填'}}<text wx:if="{{latestRecord.visit}}"> · {{latestRecord.visit}}</text></view>
+        <view wx:if="{{latestRecord.fields.length}}" class="record-fields">
+          <view wx:for="{{latestRecord.fields}}" wx:key="name" class="record-field"><text class="record-field-name">{{item.name}}</text><text class="record-field-value">{{item.result}} {{item.unit}}</text></view>
+        </view>
+        <view wx:else class="hint">还没有核对后的检查项目。</view>
+        <view class="hint">只展示你核对过的原报告字段，不判断正常或异常；解释以医生意见为准。</view>
+        <button class="small-button" bindtap="openRecordDocuments">查看原图与核对记录</button>
+      </view>
+      <view wx:else class="card empty">
+        <view class="empty-title">还没有可用的就诊 / 检查资料</view>
+        <view>没有设备时，可以先上传一张检验单，或记录一次身体感受。</view>
+        <view class="actions"><button class="small-button emphasis" bindtap="openRecordDocuments">上传检验单</button><button class="small-button" data-symptom="yes" bindtap="openEntry">记录感受</button></view>
+      </view>
+
+      <view class="section-row"><view class="section-title">最近感受</view><button class="text-button" data-symptom="yes" bindtap="openEntry">＋ 记录</button></view>
+      <view wx:if="{{latestSymptom}}" class="card symptom-card" data-id="{{latestSymptom.id}}" bindtap="openEntry">
+        <view class="section-row"><text class="item-title">{{latestSymptom.title || '身体感受'}}</text><text class="muted">{{latestSymptom.timeLabel}}</text></view>
+        <view wx:if="{{latestSymptom.note}}" class="note">{{latestSymptom.note}}</view>
+        <view class="muted">你自己记录的感受，不是设备读数。</view>
+      </view>
+      <view wx:else class="card empty">还没有身体感受记录。没有设备时，可以直接写下今天哪里不舒服。</view>
+
+      <view class="section-row"><view class="section-title">用药与复诊</view><button class="text-button" bindtap="openVisits">查看待办</button></view>
+      <view class="card status-summary">
+        <view>今日用药：已记录 {{summary.taken}} · 未记录 / 待确认 {{summary.pending}} · 已跳过 {{summary.skipped}}</view>
+        <view wx:if="{{nextFollowup}}">下次复诊：{{nextFollowup.title}} · {{nextFollowup.timeLabel}}</view>
+        <view wx:else>还没有复诊待办，可以在“健康状况”里记录。</view>
+      </view>
+
+      <button class="card question-entry" bindtap="chat">
+        <view><view class="item-title">想问医生</view><view class="muted">看不懂诊断、为什么复查、药怎么吃，可以先在这里理清</view></view><text>›</text>
+      </button>
+
+      <view class="section-row"><view class="section-title">手动测量</view><button class="text-button" bindtap="openEntry">＋ 记一笔</button></view>
+      <block wx:if="{{hasMeasurements}}">
+        <view class="latest-grid"><view wx:for="{{latest}}" wx:key="kind" class="latest-item"><view class="metric-name">{{item.label}}</view><view class="metric-value">{{item.valueLabel}}</view><view class="unit">{{item.unit}}</view><view class="metric-date">{{item.timeLabel}}</view><view class="unit">{{item.sourceLabel}}</view></view></view>
+        <view class="hint">展示已录入的测量结果与原测量时间，不代表当前实时状态。</view>
+        <view class="card trend-card">
+          <view class="section-row"><picker range="{{metricLabels}}" value="{{metric}}" bindchange="changeMetric"><view class="metric-pick">{{metricLabels[metric]}}趋势 ▾</view></picker><view class="periods"><button class="period {{days === 7 ? 'chosen' : ''}}" data-days="7" bindtap="changeDays">7 天</button><button class="period {{days === 30 ? 'chosen' : ''}}" data-days="30" bindtap="changeDays">30 天</button></view></view>
+          <view wx:if="{{chart.count}}" class="chart-layout"><view class="axis-top">{{chart.max}}</view><view class="chart"><view class="grid-line top"/><view class="grid-line middle"/><view class="grid-line bottom"/><view wx:for="{{chart.points}}" wx:key="id" class="chart-dot {{item.secondary ? 'secondary' : ''}}" style="left:{{item.x}}%;top:{{item.y}}%;" data-id="{{item.entryId}}" bindtap="openEntry"/></view><view class="axis-bottom">{{chart.min}}</view></view>
+          <view wx:else class="empty">这段时间暂无{{metricLabels[metric]}}记录</view>
+          <view class="chart-dates"><text>{{chart.start}}</text><text>{{chart.end}}</text></view>
+          <view wx:if="{{metric === 2}}" class="legend"><text>● 收缩压</text><text class="secondary-text">● 舒张压</text></view>
+          <view class="hint">{{chart.count}} 次测量 · 每个点对应一次记录，点按可核对。未测量时段留空。</view>
+        </view>
+      </block>
+      <view wx:else class="hint">没有设备时可以不填；只有你手动记录或从报告转录后，才显示测量值和趋势。</view>
+
+      <view class="section-row"><view class="section-title">记录列表</view><button class="text-button" data-symptom="yes" bindtap="openEntry">＋ 身体感受</button></view>
+      <view wx:if="{{!entries.length}}" class="card empty">还没有记录。没有测量结果时，也可以记下身体感受。</view>
+      <button wx:for="{{entries}}" wx:key="id" class="card record-item" data-id="{{item.id}}" bindtap="openEntry">
+        <view class="section-row"><text class="item-title">{{item.label}}</text><text class="record-value">{{item.valueLabel}} <text class="unit">{{item.unit}}</text></text></view>
+        <view class="muted">{{item.timeLabel}} · {{item.sourceLabel}}</view><view wx:if="{{item.note}}" class="note">{{item.note}}</view>
+      </button>
+      <view wx:if="{{entryCount > entries.length}}" class="hint">当前展示最近 {{entries.length}} 条，共 {{entryCount}} 条；趋势基于这些记录。</view>
+    </block>
+    <block wx:if="{{tab === 'status'}}">
+      <view class="section-row"><view class="section-title">就诊资料</view></view>
+      <view class="hint">检验单、就诊摘要和复诊安排集中在这里。</view>
+      <button class="card records-entry" bindtap="openRecordDocuments" hover-class="records-entry-pressed" disabled="{{busy}}" aria-label="检验单与病历，查看识别和归档状态">
+        <view class="records-icon"><image src="/assets/icons/camera-teal.png" mode="aspectFit" /></view>
+        <view class="records-main"><view class="records-title">检验单与病历</view><view class="records-caption">上传识别 · 核对归档 · 查看处理状态</view></view>
+        <image class="records-arrow" src="/assets/icons/chevron-muted.png" mode="aspectFit" />
+      </button>
+      <button class="card records-entry summary-entry" bindtap="openSummary" hover-class="records-entry-pressed" disabled="{{!active || busy}}" aria-label="就诊摘要，整理近7天或30天记录">
+        <view class="records-icon summary-icon"><image src="/assets/icons/monitor-teal.png" mode="aspectFit" /></view>
+        <view class="records-main"><view class="records-title">就诊摘要</view><view class="records-caption">把近 7 / 30 天的记录整理成一页，带去门诊</view></view>
+        <image class="records-arrow" src="/assets/icons/chevron-muted.png" mode="aspectFit" />
+      </button>
+      <view class="section-row"><view class="section-title">复诊与其他待办</view><button class="text-button" bindtap="openFollowup">＋ 新建</button></view>
+      <view wx:if="{{!followups.length}}" class="card empty">暂无待办，可记录复诊、复查等安排。</view>
+      <view wx:for="{{followups}}" wx:key="id" class="card followup {{item.done ? 'completed' : ''}}">
+        <view class="section-row"><text class="item-title">{{item.title}}</text><text class="status">{{item.done ? '已完成' : '待处理'}}</text></view>
+        <view class="muted">{{item.timeLabel}}</view><view wx:if="{{item.note}}" class="note">{{item.note}}</view>
+        <view class="actions"><button class="small-button emphasis" data-id="{{item.id}}" bindtap="toggleFollowup" disabled="{{busy}}">{{item.done ? '恢复待办' : '标记完成'}}</button><button wx:if="{{!item.done}}" class="small-button" data-id="{{item.id}}" bindtap="calendar">添加日历</button><button class="text-button danger" data-id="{{item.id}}" bindtap="removeFollowup">删除</button></view>
+      </view>
+      <view class="hint">页内待办不会自动发送微信消息。添加日历仅设置该次提醒，效果取决于手机日历权限与通知设置。</view>
+    </block>
+    <block wx:if="{{tab === 'plans'}}">
+      <view id="medication-plan">
+      <view class="section-row"><view class="section-title">{{day === today ? '今日用药' : '服药记录'}}</view><picker mode="date" value="{{day}}" end="{{today}}" bindchange="changeDay" disabled="{{busy}}"><view class="date-pill">{{day}} ▾</view></picker></view>
+      <view class="summary-grid">
+        <view><text class="summary-number">{{summary.taken}}</text><text>已服用</text></view>
+        <view><text class="summary-number">{{summary.pending}}</text><text>未记录 / 待确认</text></view>
+        <view><text class="summary-number">{{summary.skipped}}</text><text>已跳过</text></view>
+      </view>
+      <view class="hint">服药情况以本人记录为准。未记录不代表漏服，请核对实际情况。</view>
+      <view wx:if="{{!doses.length}}" class="card empty"><view class="empty-title">这一天暂无用药安排</view><view>按已有医嘱或药品说明建立计划。</view><button class="small-button" bindtap="openPlan">新建用药计划</button></view>
+      <view class="card dose-card" wx:for="{{doses}}" wx:key="key">
+        <view class="section-row"><text class="dose-clock">{{item.clock}}</text><text class="status {{item.status}}">{{item.statusLabel}}</text></view>
+        <view class="item-title">{{item.name}}</view><view class="muted">{{item.strength}} · 每次 {{item.dose}}</view>
+        <view wx:if="{{item.plan_note}}" class="note">计划备注：{{item.plan_note}}</view>
+        <view wx:if="{{item.actualLabel}}" class="note">实际服药：{{item.actualLabel}}</view>
+        <view wx:if="{{item.status === 'postponed'}}" class="note">待办处理时间：{{item.postponedLabel}}</view>
+        <view wx:if="{{item.note}}" class="note">记录备注：{{item.note}}</view>
+        <view class="actions"><button class="small-button emphasis" data-key="{{item.key}}" bindtap="openDose" disabled="{{busy}}">{{item.pending ? '记录服药情况' : '更正记录'}}</button><button wx:if="{{item.pending}}" class="small-button" data-key="{{item.key}}" bindtap="calendar" disabled="{{busy}}">添加日历</button></view>
+      </view>
+      <block wx:if="{{plans.length}}">
+        <view class="section-row"><view class="section-title">我的计划</view></view>
+        <view wx:for="{{plans}}" wx:key="id" class="card plan-card"><view class="section-row"><text class="item-title">{{item.name}}</text><text class="status {{item.status}}">{{item.statusLabel}}</text></view>
+          <view class="muted">{{item.strength || '未填规格'}} · 每次 {{item.dose || '待核对用量'}}</view><view class="plan-times">每天 {{item.timesLabel}}</view><view class="muted">{{item.periodLabel}}</view><view wx:if="{{item.note}}" class="note">{{item.note}}</view>
+          <view class="actions"><button class="small-button" data-id="{{item.id}}" bindtap="openPlan">编辑 / 暂停 / 结束</button></view>
+        </view>
+      </block>
+      <view wx:if="{{plans.length}}" class="hint">计划变更影响之后的安排，历史服药记录保留。旧版导入计划默认暂停，请先核对用量和时间。</view>
+      </view>
+    </block>
+    <button class="assistant-entry" bindtap="chat"><view><view class="item-title">健康知识助手</view><view class="muted">帮你看懂医嘱 · AI 助手</view></view><text>›</text></button>
+  </block>
+</view>
+<view wx:if="{{sheet}}" class="sheet-mask" catchtap="closeSheet">
+  <view class="health-sheet" catchtap="noop">
+    <view class="sheet-top"><text>{{sheet === 'entry' ? (form.id ? '更正健康记录' : '添加健康记录') : sheet === 'plan' ? (form.id ? '编辑用药计划' : '新建用药计划') : sheet === 'dose' ? '记录服药情况' : sheet === 'summary' ? '就诊摘要' : '新建健康待办'}}</text><button class="text-button" bindtap="closeSheet" disabled="{{busy}}">关闭</button></view>
+    <scroll-view scroll-y class="sheet-scroll">
+      <view class="sheet-content">
+        <block wx:if="{{sheet === 'entry'}}">
+          <view class="field-label">记录类型</view><picker range="{{kindLabels}}" value="{{form.kind}}" data-field="kind" bindchange="input" disabled="{{busy}}"><view class="field-input">{{kindLabels[form.kind]}} ▾</view></picker>
+          <block wx:if="{{form.kind !== 3}}"><view class="field-label">数据来源</view><picker range="{{sourceLabels}}" value="{{form.source}}" data-field="source" bindchange="input" disabled="{{busy}}"><view class="field-input">{{sourceLabels[form.source]}} ▾</view></picker>
+            <view class="field-label">{{form.kind === 2 ? '收缩压（mmHg）' : form.kind === 1 ? '血氧（%）' : '心率（bpm）'}}</view><input class="field-input" type="digit" value="{{form.value}}" data-field="value" bindinput="input" placeholder="填写实际测量值" maxlength="12" disabled="{{busy}}"/>
+            <block wx:if="{{form.kind === 2}}"><view class="field-label">舒张压（mmHg）</view><input class="field-input" type="digit" value="{{form.secondary}}" data-field="secondary" bindinput="input" placeholder="与收缩压来自同一次测量" maxlength="12" disabled="{{busy}}"/></block>
+          </block>
+          <block wx:else><view class="field-label">身体感受主题</view><input class="field-input" value="{{form.title}}" data-field="title" bindinput="input" placeholder="如：今天的睡眠、饭后感受" maxlength="80" disabled="{{busy}}"/></block>
+        </block>
+        <block wx:elif="{{sheet === 'plan'}}">
+          <view class="hint">请对照已有医嘱或药品说明填写，不确定时先核对。</view>
+          <view class="field-label">药品名称 *</view><input class="field-input" value="{{form.name}}" data-field="name" bindinput="input" maxlength="100" placeholder="药品的完整名称" disabled="{{busy}}"/>
+          <view class="field-label">药品规格（选填）</view><input class="field-input" value="{{form.strength}}" data-field="strength" bindinput="input" maxlength="100" placeholder="照包装上的规格填写" disabled="{{busy}}"/>
+          <view class="field-label">每次用量 *</view><input class="field-input" value="{{form.dose}}" data-field="dose" bindinput="input" maxlength="100" placeholder="填写用量及单位" disabled="{{busy}}"/>
+          <view class="field-label">每日时间 *（最多 8 个，每个时间点用滚轮选择）</view>
+          <view class="time-list">
+            <view wx:for="{{form.times}}" wx:for-index="index" wx:key="*this" class="time-row">
+              <picker mode="time" value="{{item}}" data-index="{{index}}" bindchange="pickPlanTime" disabled="{{busy}}"><view class="time-choice"><text class="time-value">{{item}}</text><text class="time-caret">▾</text></view></picker>
+              <button class="time-remove" data-index="{{index}}" bindtap="removePlanTime" disabled="{{busy}}">删除</button>
+            </view>
+          </view>
+          <button wx:if="{{form.times.length < 8}}" class="small-button add-time" bindtap="addPlanTime" disabled="{{busy}}">+ 添加时间（{{form.times.length}}/8）</button>
+          <view wx:else class="hint">已达到 8 个时间上限</view>
+          <view class="field-label">开始日期</view><picker mode="date" value="{{form.start_date}}" data-field="start_date" bindchange="input" disabled="{{busy}}"><view class="field-input">{{form.start_date}} ▾</view></picker>
+          <view class="field-label">结束日期（选填）</view><view class="inline-fields"><picker mode="date" value="{{form.end_date || form.start_date}}" start="{{form.start_date}}" data-field="end_date" bindchange="input" disabled="{{busy}}"><view class="field-input">{{form.end_date || '未设置'}} ▾</view></picker><button class="text-button" bindtap="clearEnd">清空</button></view>
+          <view class="field-label">状态</view><picker range="{{planStatuses}}" value="{{form.status}}" data-field="status" bindchange="input" disabled="{{busy}}"><view class="field-input">{{planStatuses[form.status]}} ▾</view></picker>
+          <view wx:if="{{form.id}}" class="hint">更改后保留历史记录。已经添加的手机日历提醒请自行修改或删除。</view>
+        </block>
+        <block wx:elif="{{sheet === 'dose'}}">
+          <view class="item-title">{{form.name}}</view><view class="muted">计划 {{form.clock}} · 每次 {{form.dose}}</view>
+          <view class="field-label">实际情况</view><picker range="{{doseStatuses}}" value="{{form.statusIndex}}" data-field="statusIndex" bindchange="input" disabled="{{busy}}"><view class="field-input">{{doseStatuses[form.statusIndex]}} ▾</view></picker>
+          <view wx:if="{{form.statusIndex === 1}}" class="hint">仅记录你已跳过这一次。不要依据本页面自行补服或加量。</view>
+          <block wx:if="{{form.statusIndex === 3}}"><view class="hint">仅调整待办处理时间，不改变医嘱或发送微信提醒。</view><view class="field-label">稍后处理时间（未来 24 小时内）</view><view class="inline-fields"><picker mode="date" value="{{form.postponeDate}}" data-field="postponeDate" bindchange="input"><view class="field-input">{{form.postponeDate}}</view></picker><picker mode="time" value="{{form.postponeTime}}" data-field="postponeTime" bindchange="input"><view class="field-input">{{form.postponeTime}}</view></picker></view></block>
+        </block>
+        <block wx:elif="{{sheet === 'followup'}}"><view class="field-label">待办名称 *</view><input class="field-input" value="{{form.title}}" data-field="title" bindinput="input" placeholder="如：复诊、复查或其他安排" maxlength="100" disabled="{{busy}}"/></block>
+        <block wx:elif="{{sheet === 'summary'}}">
+          <view class="hint">只使用你本人保存的记录，不会发送给外部模型。统计按北京时间。</view>
+          <view class="periods summary-periods">
+            <button class="period {{visitDays === 7 ? 'chosen' : ''}}" data-days="7" bindtap="changeSummaryDays" disabled="{{visitBusy}}">近 7 天</button>
+            <button class="period {{visitDays === 30 ? 'chosen' : ''}}" data-days="30" bindtap="changeSummaryDays" disabled="{{visitBusy}}">近 30 天</button>
+          </view>
+          <view wx:if="{{visitBusy}}" class="empty">正在整理记录…</view>
+          <view wx:elif="{{visitError}}" class="error-box">{{visitError}}<button class="small-button" bindtap="loadSummary">重试</button></view>
+          <block wx:elif="{{visit}}">
+            <view wx:for="{{visitSections}}" wx:key="title" class="summary-section">
+              <view class="summary-section-title">{{item.title}}</view>
+              <view wx:for="{{item.items}}" wx:for-item="line" wx:key="*this" class="summary-line">{{line}}</view>
+            </view>
+            <button class="primary-button" bindtap="copySummary">复制摘要</button>
+            <view class="hint">复制内容会进入系统剪贴板，请注意分享范围。摘要不是医院证明，也不能替代医生询问。</view>
+          </block>
+        </block>
+        <block wx:if="{{sheet !== 'summary'}}">
+          <block wx:if="{{sheet === 'entry' || sheet === 'followup' || (sheet === 'dose' && form.statusIndex === 0)}}">
+            <view class="field-label">{{sheet === 'entry' ? (form.kind === 3 ? '发生时间' : '实际测量时间') : sheet === 'dose' ? '实际服药时间 *' : '待办时间 *'}}（北京时间）</view>
+            <view class="inline-fields"><picker mode="date" value="{{form.date}}" end="{{sheet === 'followup' ? '' : today}}" data-field="date" bindchange="input" disabled="{{busy}}"><view class="field-input">{{form.date}} ▾</view></picker><picker mode="time" value="{{form.time}}" data-field="time" bindchange="input" disabled="{{busy}}"><view class="field-input">{{form.time || '选择时间'}} ▾</view></picker></view>
+          </block>
+          <view class="field-label">{{sheet === 'entry' && form.kind === 3 ? '感受描述 *' : '备注（选填）'}}</view><textarea class="field-input note-input" value="{{form.note}}" data-field="note" bindinput="input" maxlength="{{sheet === 'entry' ? 1000 : 500}}" placeholder="补充你希望保留的信息" disabled="{{busy}}"/>
+          <view wx:if="{{formError}}" class="error-box">{{formError}}</view>
+          <button class="primary-button save-button" bindtap="save" loading="{{busy}}" disabled="{{busy}}">{{sheet === 'dose' ? '确认实际情况并保存' : '保存'}}</button>
+          <button wx:if="{{form.id && (sheet === 'entry' || sheet === 'plan')}}" class="text-button danger delete-button" bindtap="remove" disabled="{{busy}}">{{sheet === 'plan' ? '删除计划及全部服药记录' : '删除这条记录'}}</button>
+        </block>
+      </view>
+    </scroll-view>
+  </view>
 </view>

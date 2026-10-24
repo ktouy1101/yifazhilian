@@ -1,1 +1,36 @@
-/* 页面样式继承 app.wxss */
+.navigation-page { padding: 24rpx 32rpx 48rpx; }
+.heading { padding: 4rpx 4rpx 24rpx; }
+.eyebrow { color: #0E7C86; font-size: 24rpx; font-weight: 600; }
+.page-title { font-size: 44rpx; font-weight: 700; line-height: 1.4; margin: 8rpx 0 12rpx; }
+.intro { font-size: 25rpx; color: #51686F; line-height: 1.7; }
+.search-box { display: flex; align-items: center; gap: 16rpx; background: #fff; border: 2rpx solid #CEDFE2; border-radius: 24rpx; padding: 10rpx 22rpx; min-height: 96rpx; }
+.search-icon { width: 36rpx; height: 36rpx; flex-shrink: 0; }
+.route-search { flex: 1; min-width: 0; font-size: 27rpx; height: 72rpx; }
+.search-placeholder { color: #637C83; }
+.navigation-page button.clear-search { padding: 18rpx 0 18rpx 12rpx; font-size: 24rpx; color: #0A5A61; }
+.guide-note { font-size: 23rpx; color: #51686F; line-height: 1.65; margin: 16rpx 4rpx 28rpx; }
+.route-heading { display: flex; align-items: center; justify-content: space-between; margin: 0 4rpx 16rpx; gap: 16rpx; }
+.section-title { flex-wrap: wrap; font-size: 29rpx; gap: 12rpx; }
+.route-count { font-size: 23rpx; color: #51686F; font-weight: 400; }
+.navigation-page button.refresh { padding: 16rpx 8rpx; color: #0A5A61; font-size: 25rpx; flex-shrink: 0; }
+.navigation-page .card { border-radius: 30rpx; padding: 28rpx; }
+.state-card { border: 2rpx solid #E2ECEE; box-shadow: none; }
+.state-title { font-size: 30rpx; font-weight: 600; margin-bottom: 12rpx; }
+.state-copy { font-size: 26rpx; color: #51686F; line-height: 1.75; word-break: break-word; }
+.onsite-help { font-size: 25rpx; line-height: 1.7; margin-top: 22rpx; padding-top: 22rpx; border-top: 2rpx solid #E2ECEE; color: #0A5A61; }
+.navigation-page button.state-action { margin-top: 24rpx; min-height: 88rpx; }
+.route-top { display: flex; gap: 16rpx; align-items: flex-start; margin-bottom: 24rpx; }
+.route-title { flex: 1; font-size: 31rpx; line-height: 1.5; font-weight: 700; overflow-wrap: break-word; }
+.verified { flex-shrink: 0; font-size: 22rpx; color: #0A5A61; background: #E2F2F3; border-radius: 12rpx; padding: 6rpx 14rpx; }
+.endpoint { display: flex; gap: 16rpx; align-items: flex-start; margin: 16rpx 0; }
+.point-label { color: #51686F; border: 2rpx solid #CEDFE2; padding: 2rpx 10rpx; border-radius: 10rpx; font-size: 22rpx; flex-shrink: 0; }
+.point-label.destination { color: #0A5A61; border-color: #94C6C9; }
+.point-copy { flex: 1; min-width: 0; font-size: 27rpx; line-height: 1.6; word-break: break-word; }
+.floor { display: inline-block; margin-left: 12rpx; color: #51686F; font-size: 24rpx; }
+.route-meta { margin-top: 22rpx; font-size: 24rpx; color: #51686F; }
+.stairs-note { color: #97522F; font-weight: 600; }
+.verified-date { margin-top: 6rpx; color: #51686F; font-size: 22rpx; }
+.navigation-page button.route-open { display: flex; width: 100%; margin-top: 24rpx; min-height: 92rpx; border-radius: 22rpx; }
+.heading-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+.navigation-page button.workbench-link { display: flex; align-items: center; gap: 8rpx; min-height: 88rpx; color: #0A5A61; font-size: 25rpx; font-weight: 600; }
+.workbench-link image { width: 28rpx; height: 28rpx; }

@@ -1,0 +1,52 @@
+<app-header back="{{true}}" title="采集路线" fallback="/pages/navigation/index" />
+<view class="page">
+  <view class="card">
+    <view class="section-title">路线采集 <text class="chip med">{{statusLabel[sub.status]}}</text></view>
+    <view class="tiny">填写节点 → 拍照预览 → 确认上传 → 提交审核</view>
+    <view class="field-label">路线标题</view>
+    <input class="title-input" disabled="{{!editable || busy}}" maxlength="100" value="{{sub.title}}" bindinput="onTitle" />
+    <view wx:if="{{sub.review_note}}" class="err">审核意见：{{sub.review_note}}</view>
+    <view wx:if="{{sub.disabled_reason}}" class="err">停用原因：{{sub.disabled_reason}}</view>
+    <view wx:if="{{!editable && sub.id}}" class="tiny">此版本不可编辑，可查看审核结果与历史。</view>
+  </view>
+  <view class="card" wx:if="{{sub.id}}">
+    <view class="section-title">沿路线逐点采集</view>
+    <view class="tiny">保留起点与终点，在中间添加转弯、楼梯或地标。每一处必须填写楼栋 / 楼层与位置说明，让患者能对照现场找到。</view>
+    <view wx:for="{{nodes}}" wx:key="node_key" class="node-card">
+      <view class="node-head">
+        <view class="node-index">{{index + 1}}</view>
+        <picker disabled="{{!editable || busy || index === 0 || index === nodes.length - 1}}" range="{{kindOptions}}" range-key="label" value="{{item.kindIndex}}" data-index="{{index}}" bindchange="pickKind"><view class="kind-pick">{{kindOptions[item.kindIndex].label}} ▾</view></picker>
+        <button wx:if="{{editable && index > 0 && index < nodes.length - 1}}" disabled="{{busy}}" class="ghost sm danger" data-index="{{index}}" bindtap="removeNode">删除</button>
+      </view>
+      <view class="node-fields">
+        <input class="inline" disabled="{{!editable || busy}}" maxlength="50" placeholder="楼栋 / 楼层（必填）" value="{{item.floor}}" data-index="{{index}}" data-key="floor" bindinput="onField" />
+        <input class="inline" disabled="{{!editable || busy}}" maxlength="100" placeholder="行进方向，例如右转" value="{{item.direction}}" data-index="{{index}}" data-key="direction" bindinput="onField" />
+        <input class="inline" disabled="{{!editable || busy}}" maxlength="300" placeholder="位置说明（必填），含地标、障碍和通行条件" value="{{item.description}}" data-index="{{index}}" data-key="description" bindinput="onField" />
+      </view>
+      <view class="photo-row">
+        <image wx:if="{{item.pendingPath || item.tempPath}}" class="photo" src="{{item.pendingPath || item.tempPath}}" mode="aspectFill" data-index="{{index}}" bindtap="preview" />
+        <text class="tiny">{{item.pendingPath ? '预览中 · 尚未上传' : item.mediaId ? '照片已保存' : '还没有照片'}}</text>
+      </view>
+      <view wx:if="{{editable}}" class="photo-row">
+        <button class="outline-button" disabled="{{busy}}" data-index="{{index}}" bindtap="capturePhoto">{{item.mediaId || item.pendingPath ? '重拍 / 重选' : '拍照 / 选图'}}</button>
+        <button wx:if="{{item.pendingPath}}" class="outline-button" disabled="{{busy}}" data-index="{{index}}" bindtap="editPhoto">编辑照片</button>
+        <button wx:if="{{item.pendingPath}}" class="btn sm" disabled="{{busy}}" data-index="{{index}}" bindtap="uploadPhoto">确认上传</button>
+      </view>
+    </view>
+    <button wx:if="{{editable}}" class="outline-button add-node" disabled="{{busy || nodes.length >= 30}}" bindtap="addNode">+ 在终点前添加节点</button>
+  </view>
+  <view class="card" wx:if="{{editable}}">
+    <label class="agree"><checkbox checked="{{privacyOk}}" disabled="{{busy}}" bindtap="togglePrivacy" color="#0E7C86" /><text>已核对所有照片，避开患者、人脸、腕带、病历和屏幕，仅采集允许的公共区域。</text></label>
+    <view class="tiny">保存草稿只保存文字；每张预览照片需要单独确认上传。</view>
+    <view class="actions"><button class="btn ghost" disabled="{{busy}}" bindtap="saveDraft">保存草稿</button><button class="btn" disabled="{{busy}}" bindtap="submit">提交审核</button></view>
+  </view>
+  <view class="card" wx:if="{{canRevise}}">
+    <view class="section-title">修订或回滚</view>
+    <view class="tiny">从历史提交恢复为草稿；当前路线暂时下线，独立复核后再发布。</view>
+    <picker disabled="{{busy}}" range="{{sub.versions}}" range-key="revision" value="{{sourceIndex}}" bindchange="selectSource"><view class="kind-pick">恢复版本 {{sub.versions[sourceIndex].revision}} ▾</view></picker>
+    <button class="outline-button" disabled="{{busy}}" bindtap="revise">恢复为草稿并重新审核</button>
+  </view>
+  <view class="card" wx:if="{{error}}"><view class="err">{{error}}</view></view>
+  <view class="actions"><button class="outline-button" disabled="{{busy}}" bindtap="load">刷新已保存内容</button><button wx:if="{{sub.id}}" class="outline-button" bindtap="viewHistory">查看审核记录</button></view>
+</view>
+

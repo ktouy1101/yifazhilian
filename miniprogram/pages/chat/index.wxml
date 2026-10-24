@@ -1,11 +1,87 @@
-<view class="page">
-  <view class="notice">本地检索与规则回复。请勿输入真实患者资料；不提供诊断、处方或个案法律结论。</view>
-  <view class="title">{{domain === 'medical' ? 'AI 健康助手' : 'AI 法律助手'}}</view>
-  <button bindtap="switchDomain" disabled="{{busy}}">切换到{{domain === 'medical' ? '法律' : '健康'}}问答（新建会话）</button>
-  <view wx:for="{{messages}}" wx:key="index" class="card">
-    <view class="message">您：{{item.question}}</view><view class="message">助手：{{item.answer}}</view>
-    <view wx:for="{{item.sources}}" wx:for-item="source" wx:key="id" class="small">依据：{{source.title}} {{source.text}}</view><view class="small">{{item.disclaimer}}</view>
+<view class="doctor-page {{domain === 'legal' ? 'legal-theme' : ''}}">
+  <view class="status-space" style="height: {{statusBarHeight}}px;"></view>
+  <view class="doc-top" style="height: {{navHeight}}px; padding-right: {{capsuleInset}}px;">
+    <button class="nav-button back" bindtap="back" aria-label="返回上一页"><image class="nav-icon" src="/assets/icons/back-teal.png" /></button>
+    <view class="dt-info"><view class="dt-name">{{roleName}}<view class="pulse"></view></view></view>
+    <button class="nav-button more" bindtap="toggleMenu" aria-label="聊天菜单"><image class="nav-icon" src="/assets/icons/more-teal.png" /></button>
+    <view wx:if="{{menuOpen}}" class="doc-menu" style="right: {{capsuleInset}}px;">
+      <button class="menu-item" bindtap="switchRole" disabled="{{busy}}"><image class="menu-icon" src="/assets/icons/user-teal.png" />{{roleSwitchLabel}}</button>
+      <button class="menu-item" bindtap="clearChat" disabled="{{busy}}"><image class="menu-icon" src="/assets/icons/chat-muted.png" />清空当前聊天</button>
+    </view>
   </view>
-  <textarea value="{{text}}" bindinput="onInput" maxlength="500" placeholder="例如：如何申请复制病历？" />
-  <button class="primary" bindtap="send" loading="{{busy}}" disabled="{{busy}}">发送</button>
+  <view wx:if="{{menuOpen}}" class="menu-mask" bindtap="closeMenu"></view>
+  <view class="doc-body">
+    <scroll-view class="chat-scroll" scroll-y scroll-into-view="{{scrollTo}}" scroll-with-animation show-scrollbar="{{false}}" bindtap="closeMenu">
+      <view class="chat-content">
+        <view class="daytag">今天 · {{previewMode || role === 'volunteer' ? '演示对话' : '本机联调'}}</view>
+        <view wx:for="{{messages}}" wx:key="id" id="{{item.id}}" class="msg {{item.role === 'user' ? 'user' : 'ai'}} {{item.cards.length ? 'tour-msg' : ''}}">
+          <view wx:if="{{item.role !== 'user'}}" class="avatar ai-avatar"><image src="{{domain === 'legal' ? '/assets/icons/scales-white.png' : '/assets/icons/chat-white.png'}}" /></view>
+          <view class="msg-body">
+          <view class="bubble {{item.error ? 'error-bubble' : ''}}">
+            <view wx:if="{{item.blocks.length}}" class="answer">
+              <block wx:for="{{item.blocks}}" wx:for-item="part" wx:key="key">
+                <text wx:if="{{part.type === 'lead'}}" class="answer-lead" selectable>{{part.text}}</text>
+                <view wx:elif="{{part.type === 'point'}}" class="answer-point"><text class="answer-dot"></text><text class="answer-point-text" selectable>{{part.text}}</text></view>
+                <text wx:elif="{{part.type === 'alert'}}" class="answer-alert" selectable>{{part.text}}</text>
+                <text wx:elif="{{part.type === 'followup'}}" class="answer-followup" selectable>{{part.text}}</text>
+                <text wx:else class="message-text" selectable>{{part.text}}</text>
+              </block>
+              <text wx:if="{{item.typing}}" class="typing-caret"></text>
+            </view>
+            <block wx:else><text class="message-text" selectable>{{item.text}}</text><text wx:if="{{item.typing}}" class="typing-caret"></text></block>
+            <button wx:if="{{item.action}}" class="error-action" data-action="{{item.action}}" bindtap="handleAction">{{item.actionLabel}}</button>
+            <view wx:if="{{item.cardsVisible}}" class="tour-cards">
+              <view wx:for="{{item.cards}}" wx:for-item="card" wx:key="key" class="tour-card tour-{{card.tone}}">
+                <view class="tour-icon">{{card.icon}}</view>
+                <view class="tour-copy"><view class="tour-title">{{card.title}}</view><view class="tour-text">{{card.text}}</view></view>
+              </view>
+            </view>
+            <view wx:if="{{item.footnote}}" class="tour-foot">{{item.footnote}}</view>
+            <view wx:if="{{!item.typing && item.topic}}" class="agent-block">
+              <view class="agent-topic">本次主题 · {{item.topic}}</view>
+            </view>
+            <view wx:if="{{!item.typing && item.materials.length}}" class="agent-block doctor-block">
+              <view class="agent-title">可以先准备</view>
+              <view wx:for="{{item.materials}}" wx:for-item="q" wx:for-index="qIndex" wx:key="*this" class="doctor-q">
+                <text class="doctor-dot">{{qIndex + 1}}</text><text class="doctor-text">{{q}}</text>
+              </view>
+            </view>
+            <view wx:if="{{!item.typing && item.nextSteps.length}}" class="agent-block doctor-block">
+              <view class="agent-title">下一步可以这样做</view>
+              <view wx:for="{{item.nextSteps}}" wx:for-item="q" wx:for-index="qIndex" wx:key="*this" class="doctor-q">
+                <text class="doctor-dot">{{qIndex + 1}}</text><text class="doctor-text">{{q}}</text>
+              </view>
+            </view>
+            <view wx:if="{{!item.typing && item.disclaimer}}" class="message-disclaimer">{{item.disclaimer}}</view>
+          </view>
+          <view wx:if="{{item.label}}" class="reply-label reply-label-bottom">{{item.label}}</view>
+          </view>
+        </view>
+        <view wx:if="{{busy}}" id="typing-row" class="msg ai"><view class="bubble typing"><view></view><view></view><view></view></view></view>
+        <view class="chat-end"></view>
+      </view>
+    </scroll-view>
+    <view wx:if="{{recommendations.length}}" class="reco-panel">
+      <view class="reco-head">
+        <text class="reco-title">为你推荐</text>
+        <text wx:if="{{recoNote}}" class="reco-note">{{recoNote}}</text>
+      </view>
+      <scroll-view class="reco-scroll" scroll-x show-scrollbar="{{false}}">
+        <view class="reco-row">
+          <button wx:for="{{recommendations}}" wx:key="key" class="reco-card" data-question="{{item.question}}" bindtap="askQuick" disabled="{{busy}}">
+            <text class="reco-question">{{item.reason}} · {{item.question}}</text>
+          </button>
+        </view>
+      </scroll-view>
+    </view>
+    <scroll-view class="quick-scroll" scroll-x show-scrollbar="{{false}}"><view class="quickrow"><button wx:for="{{questions}}" wx:key="*this" class="quick-question" data-question="{{item}}" bindtap="askQuick" disabled="{{busy}}">{{item}}</button></view></scroll-view>
+    <view wx:if="{{domain === 'medical' && !previewMode && doctorPhone}}" class="doctor-contact">
+      <text class="doctor-contact-label">病历上留的医生电话</text>
+      <text class="doctor-contact-number" bindtap="callDoctor">{{doctorPhone}}</text>
+    </view>
+    <view class="chatbar">
+      <input class="chat-input" value="{{text}}" bindinput="onInput" bindconfirm="send" confirm-type="send" maxlength="500" placeholder="{{placeholder}}" placeholder-class="input-placeholder" cursor-spacing="16" adjust-position />
+      <button class="send-button" bindtap="send" disabled="{{busy}}" aria-label="发送消息"><image class="send-icon" src="/assets/icons/send-white.png" /></button>
+    </view>
+  </view>
 </view>

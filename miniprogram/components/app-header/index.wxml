@@ -1,0 +1,10 @@
+<view wx:if="{{back}}" style="height:{{statusHeight + barHeight}}px;"></view>
+<view class="header {{back ? 'header-fixed' : ''}}" style="padding-top:{{statusHeight}}px;">
+  <view class="bar {{back ? 'bar-back' : ''}}" style="height:{{barHeight}}px;padding-right:{{rightSpace}}px;">
+    <button wx:if="{{back}}" class="back-button" bindtap="goBack" hover-class="back-pressed" aria-label="返回上一页">
+      <image src="/assets/icons/back-teal.png" class="back-icon"/><text>返回</text>
+    </button>
+    <view wx:else class="logo"><image src="/assets/icons/logo-white.png" class="logo-image"/></view>
+    <view class="brand"><text class="title">{{title}}</text><text wx:if="{{subtitle}}" class="subtitle">{{subtitle}}</text></view>
+  </view>
+</view>

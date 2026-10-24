@@ -1,0 +1,40 @@
+<app-header title="手机号登录" back="{{true}}" fallback="/pages/profile/index" />
+<view class="login-page">
+  <view class="brand">
+    <view class="brand-logo">医</view>
+    <view class="brand-name">医法智联</view>
+    <view class="brand-sub">健康与法律知识科普 · 学生项目</view>
+  </view>
+
+  <view class="form-card">
+    <view class="roles">
+      <view class="role-tab {{intent === 'patient' ? 'active' : ''}}" data-intent="patient" bindtap="pickIntent">患者</view>
+      <view class="role-tab {{intent === 'volunteer' ? 'active' : ''}}" data-intent="volunteer" bindtap="pickIntent">志愿者</view>
+      <view class="role-tab {{intent === 'staff' ? 'active' : ''}}" data-intent="staff" bindtap="pickIntent">工作人员</view>
+    </view>
+    <view class="role-hint">{{intentHint}}</view>
+    <view class="field">
+      <text class="field-label">手机号</text>
+      <input class="field-input" type="number" maxlength="11" value="{{phone}}" bindinput="onPhone" placeholder="请输入手机号" />
+    </view>
+    <view class="field">
+      <text class="field-label">验证码</text>
+      <view class="code-row">
+        <input class="field-input code-input" type="number" maxlength="6" value="{{code}}" bindinput="onCode" placeholder="6 位验证码" />
+        <button class="code-btn {{countdown > 0 ? 'disabled' : ''}}" bindtap="sendCode" disabled="{{countdown > 0 || sending}}">
+          {{countdown > 0 ? countdown + 's' : '获取'}}
+        </button>
+      </view>
+    </view>
+    <button class="login-btn" bindtap="login" disabled="{{loading}}" loading="{{loading}}">登录 / 注册</button>
+    <view class="tip">未注册的手机号将自动创建账号</view>
+  </view>
+
+  <view wx:if="{{recentAccounts.length > 0}}" class="recent">
+    <view class="recent-title">最近登录</view>
+    <view wx:for="{{recentAccounts}}" wx:key="phone" class="recent-row" bindtap="useRecent" data-phone="{{item.phone}}">
+      <text class="recent-phone">{{item.phone}}</text>
+      <text class="recent-label">切换 ›</text>
+    </view>
+  </view>
+</view>

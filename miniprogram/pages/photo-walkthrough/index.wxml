@@ -1,0 +1,34 @@
+<app-header back="{{true}}" title="照片导览" fallback="/pages/navigation/index" />
+<view class="page walkthrough">
+  <view class="topbar">
+    <view class="route-title">{{route.title}}</view>
+    <view class="progress" wx:if="{{nodes.length}}">照片 {{current + 1}} / {{nodes.length}}</view>
+  </view>
+
+  <view class="progress-bar">
+    <view class="progress-fill" style="width:{{percent}}%"></view>
+  </view>
+
+  <view wx:if="{{node}}" class="stage">
+    <view class="step-prompt">{{current === 0 ? '核对起点：你现在应在这里' : '下一处要找到的位置'}}</view>
+    <image class="photo" src="{{node.tempPath}}" mode="aspectFit" bindtap="preview" binderror="photoFailed" aria-label="现场节点照片，点击查看大图" />
+    <view class="photo-hint">点击照片可放大查看标牌</view>
+
+    <view class="chip-row">
+      <text class="chip med">{{kindLabel[node.kind]}}</text>
+      <text wx:if="{{node.floor}}" class="chip">{{node.floor}}</text>
+      <text wx:if="{{node.direction}}" class="chip warm">{{node.direction}}</text>
+    </view>
+    <view class="desc">{{node.description || '（无说明）'}}</view>
+  </view>
+
+  <view class="card" wx:if="{{error}}"><view>{{error}}</view><button class="btn" bindtap="retry" disabled="{{busy}}">重新检查路线</button><button class="btn ghost return-route" bindtap="backToRoute">返回路线详情</button></view>
+  <view wx:if="{{busy}}" class="card">正在检查路线有效性…</view>
+  <view class="controls" wx:if="{{node && !error}}">
+    <button class="btn ghost" disabled="{{busy || current === 0}}" bindtap="prev">上一步</button>
+    <button wx:if="{{current < nodes.length - 1}}" class="btn" disabled="{{busy}}" bindtap="next">{{current === 0 ? '我在起点，查看下一处' : '我已到这里，查看下一处'}}</button>
+    <button wx:else class="btn ok" disabled="{{busy}}" bindtap="finish">我已到终点，结束导览</button>
+  </view>
+
+  <view class="walkthrough-note">请到达照片中的位置后再点下一步。进度仅表示查看到第几张照片，不代表检测到你的位置；现场不符时请返回详情反馈问题。</view>
+</view>

@@ -1,7 +1,10 @@
 <view class="emergency">
-  <view class="heading">需要医护帮助</view>
-  <button class="sos" bindtouchstart="start" bindtouchend="cancel" bindtouchcancel="cancel" disabled="{{busy}}">{{holding ? '继续按住…' : '长按 1.2 秒演示呼叫'}}</button>
-  <view class="status">{{status}}</view>
-  <button wx:if="{{retryAvailable}}" bindtap="retry" disabled="{{busy}}">重试同一事件</button>
-  <view class="hint">这是演示，不会通知医护或拨打电话。真实紧急情况请使用床旁呼叫器或请身边人协助。</view>
+  <view class="emergency-main">
+    <view class="emergency-icon"><image src="/assets/icons/phone-danger.png" mode="aspectFit" /></view>
+    <view class="emergency-copy"><view class="heading">紧急呼叫</view><view class="subtitle">长按 1.2 秒 · 演示记录，不通知医护</view></view>
+    <button class="sos {{holding ? 'pressing' : ''}}" bindtouchstart="start" bindtouchend="cancel" bindtouchcancel="cancel" disabled="{{busy}}">{{busy ? '提交中' : (holding ? '继续按住…' : '长按呼叫')}}</button>
+  </view>
+  <view wx:if="{{status !== '尚未发起事件'}}" class="status">{{status}}</view>
+  <button class="retry" wx:if="{{retryAvailable}}" bindtap="retry" disabled="{{busy}}">重试同一演示事件</button>
+  <view class="hint">演示不拨号、不通知。实际紧急请使用床旁呼叫器。</view>
 </view>

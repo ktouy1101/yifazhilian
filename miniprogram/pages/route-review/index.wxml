@@ -1,0 +1,62 @@
+<app-header back="{{true}}" title="{{version ? '历史版本' : readonly ? '路线详情' : '路线审核'}}" fallback="/pages/navigation/index" />
+<view class="page {{readonly ? 'public-route' : ''}}">
+  <view wx:if="{{sub.id}}" class="card">
+    <view class="section-title">{{sub.title}} <text class="chip med">{{statusLabel[sub.status]}}</text></view>
+    <view wx:if="{{version}}" class="err">历史提交版本 {{version}} · 只读</view>
+    <view wx:if="{{!readonly}}" class="tiny">采集者：{{sub.collector_id}} · 审核员：{{sub.reviewer_id || '尚未审核'}}</view>
+    <view class="tiny">版本 {{sub.revision}} · {{sub.verified_at || sub.updated_at}}</view>
+    <view wx:if="{{sub.review_note}}" class="rn-desc">审核意见：{{sub.review_note}}</view>
+    <view wx:if="{{sub.disabled_reason}}" class="err">停用原因：{{sub.disabled_reason}}</view>
+    <view wx:if="{{selfReview}}" class="err">这是你采集的路线，需由另一位审核员审核。</view>
+  </view>
+  <view wx:if="{{readonly && sub.status === 'published'}}" class="card start-card">
+    <view class="section-title">先核对起点</view>
+    <view class="rn-desc">{{sub.start.floor}} · {{sub.start.description}}</view>
+    <view class="rn-desc">终点：{{sub.end.floor}} · {{sub.end.description}}</view>
+    <view wx:if="{{sub.has_stairs}}" class="err">这条路线含楼梯，需要无障碍通行时请先咨询工作人员。</view>
+    <view class="rn-desc">对照下方起点照片，确认你在同一位置。照片按行走顺序排列，不提供实时定位。</view>
+    <button class="btn start-button" disabled="{{busy || !nodes[0].tempPath}}" bindtap="startWalkthrough">确认起点，开始照片导览</button>
+  </view>
+  <view wx:if="{{nodes.length}}" class="card">
+    <view class="section-title">节点与现场照片</view>
+    <view wx:for="{{nodes}}" wx:key="node_key" class="review-node">
+      <view class="rn-head"><text class="rn-index">{{index + 1}}</text><text class="rn-kind">{{kindLabel[item.kind]}}</text><text class="rn-floor">{{item.floor || '未填写楼层'}}</text></view>
+      <view class="rn-desc">{{item.direction}} {{item.description}}</view>
+      <image wx:if="{{item.tempPath}}" class="rn-photo" src="{{item.tempPath}}" mode="aspectFit" data-index="{{index}}" bindtap="preview" />
+      <view wx:else class="rn-nophoto">{{item.photoError || '正在读取照片…'}}</view>
+    </view>
+  </view>
+  <view class="card" wx:if="{{isReviewer && sub.status === 'submitted'}}">
+    <view class="section-title">独立审核</view>
+    <view class="tiny">核对清晰度、方向、地标、楼层、隐私与路线连续性。</view>
+    <textarea class="note" disabled="{{busy}}" value="{{note}}" bindinput="onNote" maxlength="500" placeholder="填写实走日期、障碍和无障碍通行条件；退回时写明补拍位置与原因。" />
+    <label class="agree"><checkbox disabled="{{busy}}" checked="{{walkthrough}}" bindtap="toggleWalkthrough" color="#0E7C86" /><text>我已独立实走，并核对照片及上述通行条件。这是人工声明，尚未完成 AR 标定。</text></label>
+    <view class="actions"><button class="btn warm" disabled="{{busy}}" bindtap="requestChanges">退回补拍</button><button class="btn" disabled="{{busy}}" bindtap="approve">审核并发布</button></view>
+  </view>
+  <view class="card" wx:if="{{isReviewer && sub.status === 'published'}}">
+    <view class="section-title">停用路线</view>
+    <textarea class="note" disabled="{{busy}}" value="{{disableReason}}" bindinput="onDisableReason" maxlength="300" placeholder="填写封路、搬迁等停用原因" />
+    <button class="btn danger" disabled="{{busy}}" bindtap="disable">停用该路线</button>
+  </view>
+  <view class="card" wx:if="{{readonly && sub.status === 'published'}}">
+    <view class="field-label">发现路线问题</view>
+    <view class="chips"><text wx:for="{{fbCategories}}" wx:key="value" class="chip {{fbCategory === item.value ? 'med' : ''}}" data-value="{{item.value}}" bindtap="pickCategory">{{item.label}}</text></view>
+    <textarea class="note" value="{{fbNote}}" bindinput="onFbNote" maxlength="500" placeholder="说明问题发生的位置" />
+    <button class="btn" disabled="{{busy}}" bindtap="submitFeedback">提交反馈</button>
+  </view>
+  <view wx:if="{{sub.feedback.length}}" class="card">
+    <view class="section-title">用户反馈</view>
+    <view wx:for="{{sub.feedback}}" wx:key="id" class="review-node"><view>{{item.category}} · {{item.note}}</view><view class="tiny">{{item.created_at}}</view></view>
+  </view>
+  <view wx:if="{{sub.versions.length}}" class="card">
+    <view class="section-title">已提交版本</view>
+    <button wx:for="{{sub.versions}}" wx:key="revision" class="outline-button" data-revision="{{item.revision}}" bindtap="openVersion">查看版本 {{item.revision}} 的节点与照片</button>
+  </view>
+  <view wx:if="{{sub.history.length}}" class="card">
+    <view class="section-title">操作记录</view>
+    <view wx:for="{{sub.history}}" wx:key="id" class="review-node"><view>{{actionLabel[item.action]}} · 版本 {{item.revision}}</view><view class="tiny">{{item.actor_id}} · {{item.created_at}}</view><view class="rn-desc">{{item.details.note || item.details.reason || ''}}</view></view>
+  </view>
+  <view wx:if="{{error}}" class="card err">{{error}}</view>
+  <button class="outline-button" disabled="{{busy}}" bindtap="load">刷新当前状态</button>
+</view>
+

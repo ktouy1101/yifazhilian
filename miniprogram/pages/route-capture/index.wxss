@@ -1,0 +1,20 @@
+.field-label { font-size:24rpx; color:#51686F; margin:16rpx 0 8rpx; }
+.title-input { background:#F3F8F9; border-radius:18rpx; padding:18rpx 22rpx; font-size:28rpx; }
+.node-card { background:#F3F8F9; border-radius:24rpx; padding:20rpx; margin-bottom:18rpx; }
+.node-head { display:flex; align-items:center; gap:16rpx; margin-bottom:12rpx; }
+.node-index { width:44rpx; height:44rpx; border-radius:50%; background:#0E7C86; color:#fff; text-align:center; line-height:44rpx; font-size:24rpx; font-weight:600; }
+.kind-pick { padding:8rpx 18rpx; background:#fff; border-radius:30rpx; font-size:24rpx; }
+.node-head button { margin-left:auto; font-size:22rpx; color:#C23F34; }
+.node-fields { display:flex; flex-direction:column; gap:10rpx; }
+.inline { background:#fff; padding:14rpx 18rpx; border-radius:14rpx; font-size:25rpx; }
+.photo-row { display:flex; align-items:center; gap:16rpx; margin-top:14rpx; }
+.photo { width:140rpx; height:140rpx; border-radius:16rpx; background:#E2ECEE; }
+.photo-btn { padding:14rpx 24rpx; font-size:24rpx; }
+.outline-button { display:inline-block; padding:18rpx 28rpx; border-radius:40rpx; background:#fff; box-shadow:0 0 0 2rpx #E2ECEE; font-size:25rpx; text-align:center; }
+.add-node { width:100%; margin-top:8rpx; }
+.agree { display:flex; align-items:flex-start; gap:10rpx; font-size:24rpx; color:#51686F; }
+.actions { display:flex; gap:18rpx; margin-top:24rpx; }
+.actions button { flex:1; }
+.err { color:#C23F34; font-size:24rpx; margin-top:14rpx; }
+.btn.ghost { background:#fff; color:#132930; box-shadow:0 0 0 2rpx #E2ECEE; }
+button.ghost.sm.danger { color:#C23F34; box-shadow:0 0 0 2rpx #FCE9E7; padding:8rpx 18rpx; border-radius:30rpx; background:#fff; }

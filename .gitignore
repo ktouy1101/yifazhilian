@@ -4,8 +4,12 @@
 .env.*
 !.env.example
 .venv/
+.ocr-venv/
 __pycache__/
 .pytest_cache/
+pytest-tmp/
+.pytest-tmp/
+.pytest-run1/
 *.py[cod]
 *.db
 *.db-*
@@ -20,3 +24,7 @@ miniprogram_npm/
 project.private.config.json
 .DS_Store
 Thumbs.db
+
+# pytest 临时目录（basetemp 落到仓库内时产生）
+pytest-of-*/
+backend/pytest-of-*/

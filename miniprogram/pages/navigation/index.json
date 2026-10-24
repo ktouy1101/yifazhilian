@@ -1,1 +1,5 @@
-{}
+{
+  "usingComponents": { "app-header": "/components/app-header/index" },
+  "navigationBarTitleText": "院内导诊",
+  "enablePullDownRefresh": true
+}

@@ -1,1 +1,51 @@
-<view class="page"><view class="notice">路线占位演示；请以医院现场标识和医护指引为准。</view><view class="title">院内导诊</view><button wx:for="{{departments}}" wx:key="*this" data-name="{{item}}" bindtap="choose">{{item}}</button><view wx:if="{{selected}}" class="card">已选择 {{selected}}。待接入院方审核的楼层图与无障碍路线。</view><button bindtap="volunteer">查看志愿者端规划</button></view>
+<app-header />
+<view class="page navigation-page">
+  <view class="heading">
+    <view class="heading-row"><view class="eyebrow">院内导诊</view><button wx:if="{{canWorkbench}}" class="workbench-link" bindtap="openWorkbench">采集 / 审核<image src="/assets/icons/chevron-teal.png" /></button></view>
+    <view class="page-title">你要去哪里？</view>
+    <view class="intro">选择已发布路线，核对起点后，按现场照片逐步前往。</view>
+  </view>
+  <view class="search-box">
+    <image class="search-icon" src="/assets/icons/pin-teal.png" />
+    <input class="route-search" value="{{query}}" bindinput="onSearch" maxlength="80" placeholder="搜索科室、起点或楼层" placeholder-class="search-placeholder" confirm-type="search" aria-label="搜索科室、起点或楼层" />
+    <button wx:if="{{query}}" class="clear-search" bindtap="clearSearch" aria-label="清空搜索">清空</button>
+  </view>
+  <view class="guide-note">照片导览 · 由你确认每一步，暂不提供实时定位与 AR。</view>
+  <view class="route-heading">
+    <view class="section-title">{{query ? '搜索结果' : '已开通路线'}}<text wx:if="{{state === 'ready'}}" class="route-count">{{filtered.length}} 条</text></view>
+    <button class="refresh" disabled="{{busy}}" bindtap="reload">{{busy ? '读取中' : '刷新'}}</button>
+  </view>
+  <view wx:if="{{state === 'loading'}}" class="card state-card">
+    <view class="state-title">正在读取已发布路线</view><view class="state-copy">请稍候…</view>
+  </view>
+  <view wx:elif="{{state === 'guest'}}" class="card state-card">
+    <view class="state-title">登录后查看院内路线</view>
+    <view class="state-copy">使用当前账号查看所属院区已审核发布的照片导览。</view>
+    <button class="btn state-action" bindtap="openLogin">前往登录</button>
+  </view>
+  <view wx:elif="{{state !== 'ready'}}" class="card state-card">
+    <view class="state-title">暂时无法读取路线</view>
+    <view class="state-copy">{{error || '请刷新以读取当前账号的路线。'}}</view>
+    <button class="btn state-action" bindtap="reload">重新读取</button>
+  </view>
+  <view wx:elif="{{!routes.length}}" class="card state-card">
+    <view class="state-title">当前院区尚未开通路线</view>
+    <view class="state-copy">采集者上传现场照片，由另一位审核员核验发布后，路线才会出现在这里。</view>
+    <view class="onsite-help">现在找路，请查看院内指示牌或咨询导诊台。</view>
+  </view>
+  <view wx:elif="{{!filtered.length}}" class="card state-card">
+    <view class="state-title">没有找到匹配路线</view>
+    <view class="state-copy">试试科室简称、起点名称，或查看全部已开通路线。</view>
+    <button class="btn ghost state-action" bindtap="clearSearch">查看全部路线</button>
+  </view>
+  <block wx:else>
+    <view wx:for="{{filtered}}" wx:key="id" class="card route-card">
+      <view class="route-top"><view class="route-title">{{item.title}}</view><text class="verified">已审核</text></view>
+      <view class="endpoint"><text class="point-label">起点</text><view class="point-copy">{{item.start.description || '请查看起点照片'}}<text wx:if="{{item.start.floor}}" class="floor">{{item.start.floor}}</text></view></view>
+      <view class="endpoint"><text class="point-label destination">终点</text><view class="point-copy">{{item.end.description || '请查看终点照片'}}<text wx:if="{{item.end.floor}}" class="floor">{{item.end.floor}}</text></view></view>
+      <view class="route-meta">{{item.node_count}} 个实拍节点<text wx:if="{{item.has_stairs}}" class="stairs-note"> · 含楼梯</text></view>
+      <view wx:if="{{item.verifiedDate}}" class="verified-date">审核日期 {{item.verifiedDate}}</view>
+      <button class="btn route-open" data-id="{{item.id}}" bindtap="openRoute" aria-label="查看{{item.title}}的起点和路线">查看起点与路线</button>
+    </view>
+  </block>
+</view>

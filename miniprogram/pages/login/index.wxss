@@ -1,0 +1,27 @@
+.login-page{background:linear-gradient(180deg,#F3F8F9 0%,#E8F3F4 160rpx,#F3F8F9 380rpx);padding:32rpx 56rpx calc(40rpx + env(safe-area-inset-bottom));box-sizing:border-box}
+.brand{text-align:center;margin-bottom:64rpx}
+.brand-logo{width:140rpx;height:140rpx;margin:0 auto 24rpx;border-radius:40rpx;background:linear-gradient(135deg,#0E7C86,#0A5A61);display:flex;align-items:center;justify-content:center;color:#fff;font-size:56rpx;font-weight:800;box-shadow:0 20rpx 40rpx -16rpx rgba(14,124,134,.5)}
+.brand-name{font-size:48rpx;font-weight:800;color:#10353C;letter-spacing:2rpx}
+.brand-sub{font-size:24rpx;color:#8AA0A6;margin-top:12rpx;letter-spacing:1rpx}
+.form-card{background:#fff;border-radius:32rpx;padding:52rpx 40rpx 40rpx;box-shadow:0 16rpx 48rpx -28rpx rgba(16,66,74,.22)}
+.roles{display:flex;gap:12rpx;margin-bottom:14rpx}
+.role-tab{flex:1;text-align:center;font-size:24rpx;line-height:72rpx;height:72rpx;border-radius:16rpx;background:#F2F7F8;color:#51686F}
+.role-tab.active{background:#0E7C86;color:#fff;font-weight:600}
+.role-hint{font-size:21rpx;color:#8AA0A6;margin-bottom:32rpx;line-height:1.5}
+.field{margin-bottom:36rpx}
+.field-label{display:block;font-size:24rpx;color:#51686F;margin-bottom:14rpx;font-weight:500}
+.field-input{background:#F2F7F8;border-radius:16rpx;padding:0 28rpx;height:92rpx;line-height:92rpx;font-size:30rpx;box-sizing:border-box}
+.code-row{display:flex;gap:16rpx;align-items:stretch}
+.code-input{flex:1;min-width:0}
+.code-btn{flex-shrink:0;width:180rpx;height:92rpx;line-height:92rpx;font-size:24rpx;background:#0E7C86;color:#fff;border-radius:16rpx;padding:0;font-weight:600}
+.code-btn.disabled{background:#C3D5D8}
+.code-btn::after{border:none}
+.login-btn{width:100%;background:linear-gradient(135deg,#0E7C86,#0A5A61);color:#fff;border-radius:18rpx;font-size:30rpx;font-weight:700;line-height:96rpx;margin-top:12rpx;padding:0}
+.login-btn::after{border:none}
+.login-btn[disabled]{opacity:.6}
+.tip{text-align:center;color:#8AA0A6;font-size:22rpx;margin-top:24rpx}
+.recent{margin-top:48rpx}
+.recent-title{font-size:24rpx;color:#8AA0A6;margin-bottom:16rpx;padding:0 16rpx}
+.recent-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:20rpx;padding:28rpx 32rpx;margin-bottom:16rpx}
+.recent-phone{font-size:28rpx;font-weight:600;color:#10353C}
+.recent-label{font-size:24rpx;color:#0E7C86}

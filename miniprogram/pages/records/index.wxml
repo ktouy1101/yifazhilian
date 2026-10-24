@@ -1,0 +1,54 @@
+<app-header title="检验单与病历" back="{{true}}" fallback="/pages/home/index" />
+<view class="page records-page">
+  <view class="intro"><text class="eyebrow">M03 · 本地病历管理</text><view class="headline">每一项结果，核对后留存</view><view class="muted">拍照上传 · 原图对照 · 更正可回查</view></view>
+  <view wx:if="{{!loggedIn}}" class="card empty"><view class="section-title">先登录，查看自己的资料</view><view class="muted">照片和核对版本仅供资料本人访问。</view><button class="btn" bindtap="login">前往登录</button></view>
+  <view wx:elif="{{!active && !loading}}" class="card empty"><view class="section-title">开启本地病历处理</view><view class="muted">上传本人的检验单或病历照片，在连接的电脑端识别、核对并归档，资料不会发送给外部 AI。</view><button class="btn" bindtap="authorize" loading="{{busy}}" disabled="{{busy}}">阅读告知并授权</button></view>
+  <block wx:if="{{active}}">
+    <view class="capture-grid">
+      <button class="capture-main" bindtap="add" data-source="camera"><image src="/assets/icons/camera-white.png" /><view>拍一张检验单</view><text>平放 · 拍全 · 避开反光</text></button>
+      <button class="capture-album" bindtap="add" data-source="album"><image src="/assets/icons/record-teal.png" /><view>从相册选择</view><text>JPEG / PNG / WebP</text></button>
+    </view>
+    <view class="privacy-line"><image src="/assets/icons/lock-muted.png" />电脑端本地识别，手动核对后归档</view>
+    <view class="card checklist-card">
+      <view class="section-row"><view class="section-title">病历完整性</view><text class="muted">{{checklist ? checklist.scenario_label : '资料清单'}}</text></view>
+      <view class="checklist-tabs">
+        <button class="{{checklistScenario === 'outpatient' ? 'selected' : ''}}" data-scenario="outpatient" bindtap="changeChecklistScenario">门诊</button>
+        <button class="{{checklistScenario === 'inpatient' ? 'selected' : ''}}" data-scenario="inpatient" bindtap="changeChecklistScenario">住院</button>
+        <button class="{{checklistScenario === 'followup' ? 'selected' : ''}}" data-scenario="followup" bindtap="changeChecklistScenario">复诊</button>
+      </view>
+      <view wx:if="{{checklistBusy}}" class="muted">正在检查资料类型…</view>
+      <view wx:elif="{{checklistError}}" class="error">{{checklistError}}<button bindtap="reloadChecklist">重试</button></view>
+      <block wx:elif="{{checklist}}">
+        <view class="checklist-progress">必需资料已归档 {{checklist.complete_count}} / {{checklist.total_required}} 项</view>
+        <view wx:for="{{checklist.items}}" wx:key="key" class="checklist-item {{item.status}}">
+          <text class="check-icon">{{item.status === 'complete' ? '✓' : item.status === 'pending' ? '…' : '!'}}</text>
+          <view class="check-main"><view class="check-label">{{item.label}}<text class="check-required">{{item.required ? '必需' : '可选'}}</text></view>
+            <view wx:if="{{item.status !== 'complete'}}" class="muted">{{item.status === 'pending' ? '已上传，待核对归档' : '还没有看到这份资料'}}</view></view>
+          <text class="check-status">{{item.statusLabel}}</text>
+        </view>
+        <view class="checklist-foot">{{checklist.disclaimer}} 缺少文件不代表医院诊疗不完整。</view>
+      </block>
+    </view>
+    <input class="search" placeholder="搜索标题、机构、就诊事件或日期" value="{{query}}" bindinput="search" />
+    <view class="filters"><button class="{{filter === 'all' ? 'selected' : ''}}" data-value="all" bindtap="selectFilter">全部</button><button class="{{filter === 'draft' ? 'selected' : ''}}" data-value="draft" bindtap="selectFilter">待处理</button><button class="{{filter === 'archived' ? 'selected' : ''}}" data-value="archived" bindtap="selectFilter">已归档</button><button class="refresh" bindtap="reload" disabled="{{loading}}">刷新</button></view>
+    <view wx:if="{{!visible.length && !loading}}" class="card empty"><image class="empty-icon" src="/assets/icons/record-muted.png" /><view class="section-title">{{items.length ? '没有匹配的资料' : '还没有检验单'}}</view><view class="muted">{{items.length ? '换一个关键词或筛选条件试试。' : '上传一张本人的检验单，开始第一次核对。'}}</view></view>
+    <button wx:for="{{visible}}" wx:key="id" class="card document" data-id="{{item.id}}" bindtap="open">
+      <view class="document-top"><text class="document-title">{{item.title}}</text><text class="chip {{item.status === 'archived' ? 'ok' : 'warm'}}">{{item.statusLabel}}</text></view>
+      <view class="muted">{{item.institution || '机构待核对'}} · {{item.record_date || '日期待核对'}}</view>
+      <view class="document-bottom"><text>{{item.visit || '未分组的就诊资料'}}</text><text>{{item.archived_version ? '已保留 ' + item.archived_version + ' 个版本' : '尚未归档'}} ›</text></view>
+    </button>
+    <view class="notes-block">
+      <view class="notes-head"><view class="section-title">病历笔记</view><button class="notes-add" bindtap="addNote" disabled="{{noteBusy}}">＋ 新建</button></view>
+      <view class="muted">记录就诊要点或想问医生的问题；与上方照片资料分开保存。</view>
+      <view wx:if="{{noteError}}" class="error" role="alert">{{noteError}}</view>
+      <view wx:if="{{!notes.length}}" class="card empty"><view class="section-title">还没有笔记</view><view class="muted">可以记录复诊要点、用药后的感受或下次想问的问题。</view></view>
+      <view wx:for="{{notes}}" wx:key="id" class="card note-card" data-id="{{item.id}}" bindtap="toggleNote">
+        <view class="document-top"><text class="document-title">{{item.title}}</text><text class="note-date">{{item.record_date || ''}}</text></view>
+        <view wx:if="{{expandedNote === item.id}}" class="note-body">{{item.summary || '（无备注）'}}</view>
+      </view>
+    </view>
+  </block>
+  <view wx:if="{{loading}}" class="loading">正在读取资料…</view>
+  <view wx:if="{{error}}" class="error" role="alert">{{error}}<button bindtap="reload">重新连接</button></view>
+  <view class="footnote">资料归入当前登录账号，可回看原图和更正记录。拍照件与个人核对记录不代表医院认证副本。</view>
+</view>

@@ -3,6 +3,10 @@ from app.ai.providers.base import KnowledgeChunk
 
 class MockProvider:
     name = "mock"
+    external_network = False
+    recipient = "local_demo_process"
+    policy_version = "demo-1"
+    consent_notice = "仅将当前合成问题用于本机检索与模板回复，不向外部模型发送。授权有效期30天，可随时撤回；已保存记录不会自动删除。急症关键词由本地规则提示联系医护。"
 
     def generate(self, *, domain: str, text: str,
                  context: list[KnowledgeChunk]) -> str:

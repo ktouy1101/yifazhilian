@@ -1,1 +1,24 @@
-<view class="page"><view class="title">患者权益保护</view><view class="card">先看懂依据，再决定下一步。问答应显示法条来源、有效版本和可核验链接。</view><button class="primary" bindtap="chat">询问法律助手</button><button bindtap="draft">知情同意书功能说明</button><view class="notice">个案责任须结合事实和证据判断；本演示未对接律师。</view></view>
+<app-header />
+<view class="page legal-page">
+  <view wx:if="{{introVisible}}" class="legal-intro {{introClosing ? 'closing' : ''}}" bindtap="finishIntro" aria-label="法知模块开场动画，轻触进入对话">
+    <view class="intro-glow"></view>
+    <view class="intro-kicker">患者权益 · 普法陪伴</view>
+    <view class="scales-stage">
+      <view class="halo halo-one"></view>
+      <view class="halo halo-two"></view>
+      <view class="scale-beam"><view class="beam-line"></view><view class="beam-pivot"></view></view>
+      <view class="scale-side side-left"><view class="scale-rope"></view><view class="scale-pan"><text>法</text></view></view>
+      <view class="scale-side side-right"><view class="scale-rope"></view><view class="scale-pan"><text>理</text></view></view>
+      <view class="scale-column"></view>
+      <view class="scale-foot"></view>
+      <view class="scale-spark spark-one"></view>
+      <view class="scale-spark spark-two"></view>
+      <view class="scale-spark spark-three"></view>
+    </view>
+    <view class="intro-title">把问题，放在天平两端</view>
+    <view class="intro-copy">一边是您在意的事，一边是事实和依据。先不急着下结论，我们把它摆清楚。</view>
+    <view class="intro-tags"><text>看懂告知</text><text>理清权益</text><text>知道下一步</text></view>
+    <button class="intro-start" catchtap="finishIntro">进入对话</button>
+    <view class="intro-note">普法与风险提示 · 不下责任结论 · 不替代律师</view>
+  </view>
+</view>

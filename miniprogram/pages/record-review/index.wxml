@@ -1,0 +1,63 @@
+<app-header title="检验单核对" back="{{true}}" fallback="/pages/home/index" />
+<view class="page review-page">
+  <view class="steps"><text class="{{!doc ? 'current' : ''}}">1 上传照片</text><text>›</text><text class="{{doc && !readOnly ? 'current' : ''}}">2 对照核对</text><text>›</text><text class="{{readOnly ? 'current' : ''}}">3 确认归档</text></view>
+  <view wx:if="{{error}}" class="feedback error" role="alert">{{error}}</view>
+  <view wx:if="{{notice}}" class="feedback notice" role="status">{{notice}}</view>
+  <view wx:if="{{busy}}" class="feedback notice">正在处理，请稍候…</view>
+  <view wx:if="{{!active && !busy}}" class="card"><view class="section-title">请先登录并授权</view><button class="btn" bindtap="backToList">返回资料列表</button></view>
+  <block wx:if="{{active && !doc}}">
+    <view class="card"><view class="section-title">先看清楚，再上传</view><view class="muted tip">可以从手机相册选图，也可以直接拍照。请拍全四角、避开反光，并遮挡无关信息。</view>
+      <image wx:if="{{localPath}}" class="pending-image" src="{{localPath}}" mode="aspectFit" bindtap="preview" aria-label="放大检查待上传照片" />
+      <view wx:else class="empty-photo">选择本人的检验单照片，确保清晰、完整</view>
+      <view class="photo-actions"><button class="btn" bindtap="choosePhoto" data-source="album" disabled="{{busy || choosing}}"><image src="/assets/icons/record-white.png" />{{localPath ? '从相册重选' : '从相册选择'}}</button><button class="btn ghost" bindtap="choosePhoto" data-source="camera" disabled="{{busy || choosing}}"><image src="/assets/icons/camera-teal.png" />{{localPath ? '重新拍照' : '拍照'}}</button></view>
+      <view class="upload-note">请上传本人的真实检验单或检查报告，保留项目、结果、单位、参考范围和报告日期，方便对照核对。</view>
+      <checkbox-group bindchange="privacyChange"><label class="agree"><checkbox value="yes" checked="{{privacyConfirmed}}" disabled="{{busy || choosing}}" color="#0E7C86" /><text>我确认这是本人的检验单或检查报告，且已检查照片内容</text></label></checkbox-group>
+      <button class="btn full" bindtap="upload" loading="{{busy}}" disabled="{{busy || choosing || !localPath || !privacyConfirmed}}">上传到本机</button>
+      <button class="text-button" bindtap="discard" disabled="{{busy || choosing}}">取消本次录入</button>
+    </view>
+  </block>
+  <block wx:if="{{active && doc}}">
+    <view class="status-row"><text class="chip {{readOnly ? 'ok' : 'warm'}}">{{version ? '历史版本 v' + version.snapshot.version : doc.statusLabel}}</text><button class="text-button" bindtap="reload" disabled="{{busy}}">{{version ? '返回当前资料' : '重新载入'}}</button></view>
+    <view class="card source-panel" id="source-panel">
+      <view class="source-head"><view class="section-title">原图对照</view><button bindtap="preview" disabled="{{!image}}">放大查看 ↗</button></view>
+      <image class="source-image" src="{{image}}" mode="aspectFit" bindtap="preview" aria-label="查看原始照片，可双指缩放" />
+      <view wx:if="{{crop}}" class="crop-panel"><text>定位：{{cropLabel}}</text><image class="crop" src="{{crop}}" mode="widthFix" /></view>
+      <view class="source-caption">原照片保留。点击项目旁的“定位原图”查看对应位置。</view>
+      <view wx:if="{{!doc.archived_version && !version}}" class="actions"><button class="btn sm" bindtap="recognize" loading="{{busy}}" disabled="{{busy}}">{{doc.job ? '重试本地识别' : '开始本地识别'}}</button><button class="btn sm ghost" bindtap="retake" disabled="{{busy}}">重新拍摄</button></view>
+    </view>
+    <view class="card" id="metadata-panel">
+      <view class="section-title">资料信息<text class="tiny">按就诊事件归档</text></view>
+      <view class="field-label">资料标题</view><input class="field-input" value="{{form.title}}" maxlength="100" data-key="title" bindinput="inputMeta" disabled="{{readOnly || busy}}" placeholder="如：血常规检验报告" />
+      <view class="two-columns"><view><view class="field-label">资料类型</view><picker range="{{types}}" bindchange="pickType" disabled="{{readOnly || busy}}"><view class="field-input">{{form.record_type}}</view></picker></view><view><view class="field-label">报告日期</view><input class="field-input" value="{{form.record_date}}" maxlength="10" data-key="record_date" bindinput="inputMeta" disabled="{{readOnly || busy}}" placeholder="YYYY-MM-DD" /></view></view>
+      <view class="field-label">出具机构</view><input class="field-input" value="{{form.institution}}" maxlength="120" data-key="institution" bindinput="inputMeta" disabled="{{readOnly || busy}}" placeholder="按原图填写；未记载可留空" />
+      <view class="field-label">就诊事件 / 分组</view><input class="field-input" value="{{form.visit}}" maxlength="120" data-key="visit" bindinput="inputMeta" disabled="{{readOnly || busy}}" placeholder="如：10月心内科复诊" />
+      <view id="metadata-confirmation"><checkbox-group wx:if="{{!readOnly}}" bindchange="metadataChange"><label class="agree"><checkbox value="yes" checked="{{form.metadata_confirmed}}" disabled="{{busy}}" color="#0E7C86" /><text>已核对资料信息，检查了表格中的遗漏项目</text></label></checkbox-group></view>
+    </view>
+    <view class="section-header" id="review-items"><view class="section-title">逐项核对</view><text class="muted">{{confirmedCount}} / {{form.fields.length}} 项已确认</text></view>
+    <view wx:if="{{!form.fields.length}}" class="card muted"><view>{{doc.ocr ? 'OCR原文已保留，但尚未提取出可核对的检验项目。请重新识别，或对照原图手动添加项目，核对后即可归档。' : '尚无可核对的检验项目。可运行本地识别，也可直接对照原图手填。'}}</view><button wx:if="{{!readOnly && !doc.archived_version}}" class="btn ghost full retry-extraction" bindtap="recognize" disabled="{{busy}}">{{doc.job ? '重新识别并提取项目' : '识别并提取项目'}}</button></view>
+    <view wx:for="{{form.fields}}" wx:key="id" id="review-field-{{index}}" class="card result-card {{item.lowConfidence ? 'low-confidence' : ''}}">
+      <view class="result-head"><text class="row-number">{{index + 1}}</text><text class="chip {{item.lowConfidence ? 'warm' : 'med'}}">{{item.confidenceLabel || (item.original ? 'OCR提取' : '手动填写')}}</text><text wx:if="{{item.lowConfidence}}" class="attention">请重点核对</text><button class="locate" data-index="{{index}}" bindtap="locate" disabled="{{busy}}">{{item.box ? '定位原图' : '查看原图'}}</button></view>
+      <view class="field-label">检验项目</view><input class="field-input" value="{{item.name}}" maxlength="120" data-index="{{index}}" data-key="name" bindinput="inputField" disabled="{{readOnly || busy}}" placeholder="项目名称" />
+      <view class="two-columns"><view><view class="field-label">结果（保留小数点 / 符号）</view><input class="field-input result-value" value="{{item.result}}" maxlength="200" data-index="{{index}}" data-key="result" bindinput="inputField" disabled="{{readOnly || busy}}" placeholder="按原图填写" /></view><view><view class="field-label">单位</view><input class="field-input" value="{{item.unit}}" maxlength="100" data-index="{{index}}" data-key="unit" bindinput="inputField" disabled="{{readOnly || busy}}" placeholder="未记载可留空" /></view></view>
+      <view class="field-label">参考区间</view><input class="field-input" value="{{item.reference}}" maxlength="200" data-index="{{index}}" data-key="reference" bindinput="inputField" disabled="{{readOnly || busy}}" placeholder="照录原文，不自动补充范围" />
+      <view wx:if="{{item.original}}" class="original-value">原识别：{{item.original.name}} · {{item.original.result}} {{item.original.unit}} · {{item.original.reference || '未识别参考区间'}}</view>
+      <view wx:if="{{!readOnly}}" class="result-footer"><checkbox-group data-index="{{index}}" bindchange="confirmField"><label class="agree"><checkbox value="yes" checked="{{item.confirmed}}" disabled="{{busy}}" color="#0E7C86" /><text>已对照原图核对本项</text></label></checkbox-group><button class="remove" data-index="{{index}}" bindtap="removeField" disabled="{{busy}}">移除</button></view>
+    </view>
+    <button wx:if="{{!readOnly}}" class="btn ghost full add-field" bindtap="addField" disabled="{{busy || form.fields.length >= 100}}">＋ 手动添加遗漏项目</button>
+    <view class="card evidence">
+      <button class="fold" bindtap="toggleRaw">OCR 原文与识别记录 <text>{{rawVisible ? '收起 −' : '展开 ＋'}}</text></button>
+      <block wx:if="{{rawVisible}}"><view class="muted tip">原文仅供核对，识别置信度不代表临床可靠性。</view><view wx:if="{{doc.ocr}}" class="tiny">{{doc.ocr.engine}} · {{doc.ocr.elapsed_ms}} ms</view><view wx:for="{{doc.ocr.lines}}" wx:key="id" class="raw-line"><text selectable>{{item.text}}</text></view><view wx:if="{{!doc.ocr}}" class="muted">暂无识别原文，可直接对照原图手填。</view><button wx:for="{{doc.jobs}}" wx:key="id" class="history-link" data-id="{{item.id}}" bindtap="openJob" disabled="{{busy}}">{{item.startedLabel}} · {{item.status === 'succeeded' ? '识别完成' : (item.error || '识别中')}} ›</button></block>
+    </view>
+    <view wx:if="{{doc.versions.length}}" class="card evidence"><button class="fold" bindtap="toggleHistory">归档版本与更正记录 <text>{{historyVisible ? '收起 −' : '展开 ＋'}}</text></button><block wx:if="{{historyVisible}}"><button wx:for="{{doc.versions}}" wx:key="version" class="history-link" data-version="{{item.version}}" bindtap="openVersion" disabled="{{busy}}"><view>第 {{item.version}} 版 · {{item.reason}}</view><text class="tiny">{{item.createdLabel}}</text><text> ›</text></button></block></view>
+    <view wx:if="{{version}}" class="card"><view class="section-title">本版修改记录</view><view class="muted tip">{{version.reason}}</view><view wx:for="{{version.changes}}" wx:key="field" class="change"><text class="tiny">{{item.field}}</text><view><text class="before">{{item.before || '（空）'}}</text> → <text>{{item.after || '（空）'}}</text></view></view><view wx:if="{{!version.changes.length}}" class="muted">本版与对照基线的字段一致。</view></view>
+    <view wx:if="{{!readOnly && doc.archived_version}}" class="card" id="correction-reason"><view class="field-label">本次更正原因（必填）</view><textarea class="reason" value="{{reason}}" maxlength="300" bindinput="inputReason" disabled="{{busy}}" placeholder="如：核对原图后，修正小数点位置" /></view>
+    <view class="footnote">只保存个人核对记录，不自动判断异常或修改医嘱。资料不会自动用于 AI 问答。</view>
+    <view wx:if="{{!readOnly}}" class="archive-guide {{archiveReady ? 'ready' : ''}}" role="status"><view class="guide-title">{{archiveReady ? '核对已完成，可以确认归档' : '归档前还需完成'}}</view><button wx:for="{{archiveIssues}}" wx:key="text" class="review-step" data-index="{{index}}" bindtap="goToReview" disabled="{{busy}}"><text>{{item.text}}</text><text class="step-arrow">去核对 ›</text></button></view>
+    <view class="bottom-actions">
+      <block wx:if="{{!readOnly}}"><button class="btn ghost" bindtap="save" disabled="{{busy}}">保存草稿</button><button class="btn" bindtap="confirm" disabled="{{busy}}">{{archiveReady ? (doc.archived_version ? '确认更正并归档' : '确认归档') : '去完成核对'}}</button></block>
+      <button wx:elif="{{!version}}" class="btn full" bindtap="edit" disabled="{{busy}}">发现错误？更正并保留新版本</button>
+      <button wx:else class="btn full" bindtap="reload" disabled="{{busy}}">返回当前资料</button>
+    </view>
+    <button wx:if="{{!doc.archived_version}}" class="text-button discard" bindtap="discard" disabled="{{busy}}">放弃并删除未归档草稿</button>
+  </block>
+</view>

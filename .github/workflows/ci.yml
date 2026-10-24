@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r backend/requirements-dev.txt
+      - name: Run backend tests
+        # Test files that need a writable temp dir are skipped by pytest itself
+        # when the runner cannot provide one; CI runners always can.
+        run: python -m pytest -q
+
+  miniprogram:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run mini-program unit tests
+        # Directory form ("node --test tests/") resolves poorly on Windows; the
+        # explicit glob behaves the same locally and on the runner.
+        run: node --test tests/*.test.cjs

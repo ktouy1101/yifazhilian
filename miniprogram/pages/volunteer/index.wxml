@@ -1,0 +1,43 @@
+<app-header title="志愿者中心" back="{{true}}" fallback="/pages/profile/index" />
+<view class="volunteer-page">
+  <view wx:if="{{loading}}" class="tip-card">正在读取申请状态…</view>
+
+  <view wx:elif="{{status === 'guest'}}" class="tip-card">
+    <view class="tip-title">还没有登录</view>
+    <view class="tip-text">请先在「我的」用手机号登录，再申请成为志愿者。</view>
+    <button class="primary-btn" bindtap="openLogin">去登录</button>
+  </view>
+
+  <block wx:else>
+    <view class="status-card status-{{status}}">
+      <view class="status-title">
+        {{status === 'approved' ? '已通过审核' : status === 'pending' ? '等待审核' : status === 'rejected' ? '申请未通过' : status === 'suspended' ? '已暂停' : '还不是志愿者'}}
+      </view>
+      <view class="status-text">
+        {{status === 'approved' ? '你可以领取任务、采集路线并提交审核。' : status === 'pending' ? '审核员会在核对实名与医院后处理，通过后自动开放采集权限。' : status === 'rejected' ? '可以修改信息后重新提交。' : status === 'suspended' ? '请联系审核员恢复权限。' : '填写信息并确认培训后提交申请。'}}
+      </view>
+      <view wx:if="{{profile && profile.note}}" class="status-note">审核意见：{{profile.note}}</view>
+    </view>
+
+    <button wx:if="{{caps.can_collect}}" class="primary-btn" bindtap="openWorkbench">进入采集工作台</button>
+
+    <view wx:if="{{status === 'none' || status === 'rejected'}}" class="form-card">
+      <view class="form-title">志愿者申请</view>
+      <view class="field">
+        <text class="field-label">所属医院</text>
+        <input class="field-input" value="{{hospitalId}}" bindinput="onHospital" placeholder="如 demo-hospital" />
+      </view>
+      <view class="field">
+        <text class="field-label">真实姓名（用于核验）</text>
+        <input class="field-input" value="{{realName}}" bindinput="onName" maxlength="16" placeholder="请填写真实姓名" />
+      </view>
+      <view class="field check-row">
+        <switch checked="{{training}}" bindchange="onTraining" color="#0E7C86" />
+        <text class="check-text">我已了解志愿者只做导诊与流程指引，不诊断、不解释检查结果、不代替医护</text>
+      </view>
+      <button class="primary-btn" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">提交申请</button>
+    </view>
+
+    <view wx:if="{{error}}" class="error-text">{{error}}</view>
+  </block>
+</view>

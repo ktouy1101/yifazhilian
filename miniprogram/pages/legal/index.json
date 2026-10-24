@@ -1,1 +1,4 @@
-{}
+{
+  "usingComponents": { "app-header": "/components/app-header/index" },
+  "navigationBarTitleText": "患者权益知识科普"
+}

@@ -1,1 +1,6 @@
-{"navigationBarTitleText": "AI 助手 · 本地模拟"}
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "健康知识助手",
+  "backgroundColor": "#F3F8F9",
+  "disableScroll": true
+}

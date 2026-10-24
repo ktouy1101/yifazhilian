@@ -1,13 +1,13 @@
 {
-  "pages": ["pages/home/index", "pages/chat/index", "pages/navigation/index", "pages/legal/index", "pages/profile/index"],
-  "window": {"navigationBarTitleText": "医法智联 · 演示", "navigationBarBackgroundColor": "#0e7c86", "navigationBarTextStyle": "white", "backgroundColor": "#f4f8f8"},
+  "pages": ["pages/home/index", "pages/chat/index", "pages/navigation/index", "pages/legal/index", "pages/profile/index", "pages/login/index", "pages/admin/index", "pages/volunteer/index", "pages/navigation-workbench/index", "pages/route-capture/index", "pages/route-review/index", "pages/photo-walkthrough/index", "pages/records/index", "pages/record-review/index"],
+  "window": {"navigationStyle":"custom", "navigationBarTitleText": "医法智联", "navigationBarBackgroundColor": "#E2F2F3", "navigationBarTextStyle": "black", "backgroundColor": "#F3F8F9"},
   "tabBar": {
-    "color": "#516168", "selectedColor": "#086d76",
+    "color": "#8AA0A6", "selectedColor": "#0E7C86", "backgroundColor":"#ffffff", "borderStyle":"white",
     "list": [
-      {"pagePath": "pages/home/index", "text": "健康"},
-      {"pagePath": "pages/navigation/index", "text": "导诊"},
-      {"pagePath": "pages/legal/index", "text": "法援"},
-      {"pagePath": "pages/profile/index", "text": "我的"}
+      {"pagePath": "pages/home/index", "text": "健康", "iconPath":"assets/icons/home-muted.png", "selectedIconPath":"assets/icons/home-teal.png"},
+      {"pagePath": "pages/navigation/index", "text": "导诊", "iconPath":"assets/icons/pin-muted.png", "selectedIconPath":"assets/icons/pin-teal.png"},
+      {"pagePath": "pages/legal/index", "text": "法知", "iconPath":"assets/icons/scales-muted.png", "selectedIconPath":"assets/icons/scales-teal.png"},
+      {"pagePath": "pages/profile/index", "text": "我的", "iconPath":"assets/icons/user-muted.png", "selectedIconPath":"assets/icons/user-teal.png"}
     ]
   },
   "style": "v2",

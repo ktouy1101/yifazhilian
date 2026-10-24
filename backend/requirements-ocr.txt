@@ -1,0 +1,6 @@
+# Isolated Python 3.12 CPU worker. Models ship inside the RapidOCR wheel.
+rapidocr-onnxruntime==1.4.4
+onnxruntime==1.20.1
+numpy==1.26.4
+opencv-python==4.10.0.84
+Pillow==12.3.0
