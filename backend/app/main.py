@@ -8,9 +8,11 @@ from app.api.record_documents import router as records_router
 from app.api.health_management import router as health_router
 from app.api.volunteer import admin_router as volunteer_admin_router
 from app.api.volunteer import router as volunteer_router
+from app.api.admin import router as admin_router
+from app.api.legal_help import router as legal_help_router
 from app.services.record_ocr import LocalOCR
 from app.config import (API_PREFIX, AISettings, MCPSettings, WechatConfig,
-                        demo_auth_enabled, read_ai_settings, read_mcp_settings,
+                        allowed_hosts, demo_auth_enabled, read_ai_settings, read_mcp_settings,
                         read_wechat_settings, runtime_mode)
 from app.ai.providers.factory import create_provider
 from app.db import Database
@@ -43,9 +45,7 @@ def create_app(database: Database | None = None, *, ai_settings: AISettings | No
     application.state.record_ocr = LocalOCR()
     application.state.knowledge_provider = create_knowledge_provider(
         mcp_settings if mcp_settings is not None else read_mcp_settings())
-    application.add_middleware(TrustedHostMiddleware,
-                               allowed_hosts=["127.0.0.1", "localhost", "testserver",
-                                              "192.168.199.126"])
+    application.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts())
 
     @application.middleware("http")
     async def no_cache(request, call_next):
@@ -60,6 +60,8 @@ def create_app(database: Database | None = None, *, ai_settings: AISettings | No
     application.include_router(health_router, prefix=API_PREFIX)
     application.include_router(volunteer_router, prefix=API_PREFIX)
     application.include_router(volunteer_admin_router, prefix=API_PREFIX)
+    application.include_router(admin_router, prefix=API_PREFIX)
+    application.include_router(legal_help_router, prefix=API_PREFIX)
     _log_startup(application)
     return application
 

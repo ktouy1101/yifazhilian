@@ -108,3 +108,12 @@ page { height: 100%; overflow: hidden; background: #F3F8F9; }
 @keyframes typing-pulse { 0%,60%,100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-10rpx); opacity: 1; } }
 @keyframes message-in { from { opacity: 0; transform: translateY(16rpx); } to { opacity: 1; transform: translateY(0); } }
 @keyframes caret-blink { 0%,45% { opacity: 1; } 46%,100% { opacity: 0; } }
+
+/* 法知区的真人法律志愿者入口 */
+.human-entry { display:flex; align-items:center; gap:16rpx; margin:0 0 20rpx; padding:20rpx 22rpx; border-radius:20rpx; background:linear-gradient(135deg,#E7F4F1,#F2F9F8); border:2rpx solid #CFE7E2; }
+.human-entry-icon { flex:none; width:56rpx; height:56rpx; border-radius:16rpx; background:#0E7C86; display:flex; align-items:center; justify-content:center; }
+.human-entry-icon image { width:30rpx; height:30rpx; }
+.human-entry-copy { flex:1; min-width:0; }
+.human-entry-title { font-size:26rpx; font-weight:600; color:#0A5A61; }
+.human-entry-text { margin-top:4rpx; font-size:21rpx; color:#5B737A; }
+.human-entry-arrow { flex:none; font-size:30rpx; color:#8FB3B0; }

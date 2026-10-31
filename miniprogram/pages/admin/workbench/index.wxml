@@ -1,0 +1,121 @@
+<app-header title="审核工作台" subtitle="待办优先" fallback="/pages/admin/workbench/index" />
+<view class="shell-page">
+  <view class="shell-hero">
+    <block wx:if="{{tab === 'todo'}}">
+      <view class="hero-name">待办 {{overview.volunteers_pending + overview.credentials_pending + overview.routes_pending}}</view>
+      <view class="hero-sub">志愿者 {{overview.volunteers_pending}} · 凭证 {{overview.credentials_pending}} · 路线 {{overview.routes_pending}} · 工单在「监督」里只看状态</view>
+    </block>
+    <block wx:else>
+      <view class="hero-name">{{tab === 'queues' ? '监督' : tab === 'people' ? '用户管理' : '我的'}}</view>
+      <view class="hero-sub">{{tab === 'queues' ? '只读工单、反馈与审计；回复是志愿者的工作' : tab === 'people' ? '按类型分开管理账号' : '审计与账号设置'}}</view>
+    </block>
+  </view>
+
+  <view wx:if="{{loading}}" class="shell-card">正在读取…</view>
+  <view wx:elif="{{error}}" class="shell-card"><view class="shell-error">{{error}}</view></view>
+
+  <block wx:else>
+    <block wx:if="{{tab === 'todo'}}">
+      <view class="shell-card">
+        <view class="card-title">志愿者申请 · {{volunteers.length}}</view>
+        <view wx:if="{{!volunteers.length}}" class="shell-empty">没有待审申请</view>
+        <view wx:for="{{volunteers}}" wx:key="user_id" class="item">
+          <view class="item-main">
+            <view class="item-title">{{item.real_name}} · {{item.display_name}}</view>
+            <view class="item-desc">医院 {{item.hospital_id}}</view>
+          </view>
+          <button class="item-btn ok" data-id="{{item.user_id}}" data-decision="approve" bindtap="reviewVolunteer">通过</button>
+          <button class="item-btn" data-id="{{item.user_id}}" data-decision="reject" bindtap="reviewVolunteer">拒绝</button>
+        </view>
+      </view>
+
+      <view class="shell-card">
+        <view class="card-title">法律凭证 · {{credentials.length}}</view>
+        <view wx:if="{{!credentials.length}}" class="shell-empty">没有待核验凭证</view>
+        <view wx:for="{{credentials}}" wx:key="id" class="item item-stack">
+          <view class="item-main">
+            <view class="item-title">{{item.display_name}}<text class="item-tag">{{item.kindText}}</text></view>
+            <view class="item-desc">{{item.timeText}}</view>
+          </view>
+          <view class="item-actions">
+            <button class="item-btn" data-id="{{item.id}}" bindtap="viewCredential">看图</button>
+            <button class="item-btn ok" data-id="{{item.id}}" data-decision="approve" bindtap="reviewCredential">通过</button>
+            <button class="item-btn" data-id="{{item.id}}" data-decision="reject" bindtap="reviewCredential">拒绝</button>
+          </view>
+        </view>
+      </view>
+
+      <view class="shell-card">
+        <view class="card-title">路线待审 · {{overview.routes_pending}}</view>
+        <view wx:if="{{!overview.routes_pending}}" class="shell-empty">没有待审路线</view>
+        <view wx:else class="big-entry" bindtap="openRoutes">
+          <text class="big-icon">◈</text>
+          <view class="big-copy"><view class="big-title">去审核 {{overview.routes_pending}} 条路线</view><view class="big-desc">看节点照片、通过后发布</view></view>
+          <text class="big-arrow">›</text>
+        </view>
+      </view>
+    </block>
+
+    <block wx:elif="{{tab === 'queues'}}">
+      <view class="shell-card">
+        <view class="card-title">法律工单 · 只读</view>
+        <view class="item-desc" style="margin-bottom:8rpx">回复是法律志愿者的工作；这里只看状态与往来。</view>
+        <view wx:if="{{!helpItems.length}}" class="shell-empty">没有工单</view>
+        <view wx:for="{{helpItems}}" wx:key="id" class="item" data-id="{{item.id}}" bindtap="openHelp">
+          <view class="item-main">
+            <view class="item-title">{{item.topic}}<text class="item-tag">{{item.status}}</text></view>
+            <view class="item-desc">{{item.text}}</view>
+          </view>
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+
+      <view class="shell-card">
+        <view class="card-title">路线与反馈</view>
+        <view class="big-entry" bindtap="openRoutes"><text class="big-icon">◈</text><view class="big-copy"><view class="big-title">待审 {{overview.routes_pending}} 条 · 已发布 {{overview.routes_published}} 条</view><view class="big-desc">看节点照片、通过发布</view></view><text class="big-arrow">›</text></view>
+        <view class="big-entry" bindtap="openFeedback"><text class="big-icon">◌</text><view class="big-copy"><view class="big-title">导航反馈 {{overview.feedback_total}} 条</view><view class="big-desc">患者对路线的提问</view></view><text class="big-arrow">›</text></view>
+        <view class="big-entry" bindtap="openAudit"><text class="big-icon">▤</text><view class="big-copy"><view class="big-title">审计记录</view><view class="big-desc">最近的审核与授权动作</view></view><text class="big-arrow">›</text></view>
+      </view>
+    </block>
+
+    <block wx:elif="{{tab === 'people'}}">
+      <view class="seg">
+        <view wx:for="{{filters}}" wx:key="key" class="seg-item {{userFilter === item.key ? 'on' : ''}}"
+              data-key="{{item.key}}" bindtap="setUserFilter">
+          {{item.label}}<text class="seg-count">{{userCounts[item.key]}}</text>
+        </view>
+      </view>
+
+      <view class="shell-card">
+        <view wx:if="{{!userList.length}}" class="shell-empty">这一类暂时没有账号。</view>
+        <view wx:for="{{userList}}" wx:key="id" class="person">
+          <view class="avatar">{{item.initial}}</view>
+          <view class="person-main">
+            <view class="person-name">{{item.display_name}}
+              <text wx:if="{{item.isDemo}}" class="person-tag demo">演示</text>
+              <text class="person-tag {{item.isReviewer ? 'rev' : item.isVolunteer ? 'vol' : ''}}">{{item.roleTag}}</text>
+            </view>
+            <view class="person-sub">{{item.phoneText}}</view>
+            <view class="person-actions">
+              <button wx:if="{{item.isVolunteer}}" class="person-btn" data-id="{{item.id}}" data-role="volunteer" data-action="revoke" bindtap="toggleRole">撤销志愿者</button>
+              <button wx:else class="person-btn" data-id="{{item.id}}" data-role="volunteer" data-action="grant" bindtap="toggleRole">设为志愿者</button>
+              <button wx:if="{{item.isReviewer}}" class="person-btn" data-id="{{item.id}}" data-role="reviewer" data-action="revoke" bindtap="toggleRole">撤销审核员</button>
+              <button wx:else class="person-btn" data-id="{{item.id}}" data-role="reviewer" data-action="grant" bindtap="toggleRole">设为审核员</button>
+              <button wx:if="{{!item.isDemo}}" class="person-btn danger" data-id="{{item.id}}" data-name="{{item.display_name}}" bindtap="disableUser">停用</button>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:elif="{{tab === 'mine'}}">
+      <view class="shell-card">
+        <view class="big-entry" bindtap="openAudit"><text class="big-icon">▤</text><view class="big-copy"><view class="big-title">审计记录</view><view class="big-desc">谁在什么时候做了什么</view></view><text class="big-arrow">›</text></view>
+        <view class="big-entry" bindtap="logout"><text class="big-icon">出</text><view class="big-copy"><view class="big-title">退出登录</view><view class="big-desc">回到未登录状态</view></view><text class="big-arrow">›</text></view>
+      </view>
+    </block>
+  </block>
+
+  <view class="shell-gap"></view>
+</view>
+<shell-nav items="{{tabs}}" active="{{tab}}" bindchange="switchTab" />

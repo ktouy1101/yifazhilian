@@ -1,0 +1,28 @@
+<app-header title="用户管理" back="{{true}}" fallback="/pages/admin/index" />
+<view class="admin-page">
+  <view class="admin-head">
+    <view class="admin-sub">授予/撤销能力即时生效；停用会立即下线并释放手机号，历史数据保留。</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="admin-group"><view class="empty">正在读取…</view></view>
+  <view wx:elif="{{error}}" class="admin-group"><view class="empty">{{error}}</view></view>
+
+  <view wx:else class="admin-group">
+    <view class="admin-group-title">共 {{items.length}} 个账号</view>
+    <view wx:for="{{items}}" wx:key="id" class="admin-row admin-row-stack">
+      <view class="admin-row-main">
+        <view class="admin-row-title">{{item.display_name}}<text class="admin-tag">{{item.role}}</text></view>
+        <view class="admin-row-detail">{{item.phone || '无手机号'}} · 角色：{{item.rolesText}}</view>
+      </view>
+      <view class="admin-actions">
+        <button class="admin-btn small" data-id="{{item.id}}" data-role="volunteer"
+                data-action="{{item.hasVolunteer ? 'revoke' : 'grant'}}"
+                bindtap="toggleRole">{{item.hasVolunteer ? '撤销志愿者' : '授予志愿者'}}</button>
+        <button class="admin-btn small" data-id="{{item.id}}" data-role="reviewer"
+                data-action="{{item.hasReviewer ? 'revoke' : 'grant'}}"
+                bindtap="toggleRole">{{item.hasReviewer ? '撤销审核员' : '授予审核员'}}</button>
+        <button class="admin-btn small danger" data-id="{{item.id}}" data-name="{{item.display_name}}" bindtap="disableUser">停用</button>
+      </view>
+    </view>
+  </view>
+</view>

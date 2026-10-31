@@ -1,0 +1,19 @@
+<app-header title="路线审核" back="{{true}}" fallback="/pages/admin/index" />
+<view class="admin-page">
+  <view class="admin-head">
+    <view class="admin-sub">点击一条进入审核：可看节点与照片，通过后发布；采集者不能审自己的路线。</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="admin-group"><view class="empty">正在读取…</view></view>
+  <view wx:elif="{{error}}" class="admin-group"><view class="empty">{{error}}</view></view>
+  <view wx:elif="{{!items.length}}" class="admin-group"><view class="empty">没有待审核的路线。</view></view>
+
+  <view wx:else class="admin-group">
+    <view wx:for="{{items}}" wx:key="id" class="admin-row admin-row-stack" data-id="{{item.id}}" bindtap="open">
+      <view class="admin-row-main">
+        <view class="admin-row-title">{{item.title}}<text class="admin-tag">{{item.statusText}}</text></view>
+        <view class="admin-row-detail">采集者 {{item.collector_id}} · 更新于 {{item.timeText}}</view>
+      </view>
+    </view>
+  </view>
+</view>

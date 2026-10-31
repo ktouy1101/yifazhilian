@@ -79,6 +79,22 @@ def legal_mcp_fallback_enabled(environ: Mapping[str, str] | None = None) -> bool
     return values.get("YIFAZHILIAN_LEGAL_MCP_FALLBACK", "0").strip().lower() in ("1", "true", "yes", "on")
 
 
+def allowed_hosts(environ: Mapping[str, str] | None = None) -> list[str]:
+    """Hosts accepted by TrustedHostMiddleware.
+
+    Local development addresses stay allowed; deploying behind a domain needs
+    YIFAZHILIAN_ALLOWED_HOSTS=example.com so requests are not rejected with 400.
+    """
+    base = ["127.0.0.1", "localhost", "testserver", "192.168.199.126"]
+    raw = (_read_kv(None, environ).get("YIFAZHILIAN_ALLOWED_HOSTS", "") or "").strip()
+    extra: list[str] = []
+    for item in raw.replace(";", ",").split(","):
+        name = item.strip()
+        if name and name not in base and name not in extra:
+            extra.append(name)
+    return base + extra
+
+
 DISCLAIMER = "仅合成数据演示；非真实诊疗或法律意见；紧急情况请直接联系病区医护。"
 DISCLAIMER_LEGAL = "仅合成数据演示；不构成正式法律意见；复杂争议请咨询律师或拨打12348。"
 

@@ -1,0 +1,151 @@
+<app-header title="志愿者工作台" subtitle="{{me && me.display_name ? me.display_name : ''}}" fallback="/pages/volunteer/workbench/index" />
+<view class="shell-page">
+  <view class="shell-hero">
+    <view class="hero-name">{{me && me.display_name ? me.display_name : '志愿者'}}</view>
+    <view class="hero-badges">
+      <text wx:if="{{caps.can_collect}}" class="hero-badge">导诊采集</text>
+      <text wx:if="{{caps.can_help_legal}}" class="hero-badge legal">法律帮扶</text>
+      <text wx:if="{{!caps.can_collect && !caps.can_help_legal}}" class="hero-badge wait">待审核</text>
+    </view>
+    <view class="hero-sub">
+      {{caps.can_collect && caps.can_help_legal ? '两项能力各自独立：采集交审核，法律工单由你接单回复。' : caps.can_collect ? '只做导诊采集：领任务、拍照、等审核、按意见补拍。' : caps.can_help_legal ? '只做法律帮扶：接工单并在对话里回复。' : '申请通过后才会出现对应的工作入口。'}}
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="shell-card">正在读取…</view>
+  <view wx:elif="{{error}}" class="shell-card"><view class="shell-error">{{error}}</view></view>
+
+  <block wx:else>
+    <!-- 工作台：只回答"今天要做什么"，不重复列表 -->
+    <block wx:if="{{tab === 'home'}}">
+      <view wx:if="{{!caps.can_collect && !caps.can_help_legal}}" class="shell-card">
+        <view class="card-title">还没有工作权限</view>
+        <view class="shell-empty">先去「志愿者申请」提交资料，审核通过后再来。</view>
+        <button class="wide-btn" bindtap="openApplication">去填志愿者申请</button>
+      </view>
+
+      <block wx:if="{{caps.can_collect}}">
+        <view class="stat-row" bindtap="goCollect">
+          <view class="stat-card {{counts.resubmit ? 'alert' : ''}}">
+            <text class="stat-num">{{counts.resubmit}}</text><text class="stat-label">需补拍</text>
+          </view>
+          <view class="stat-card"><text class="stat-num">{{counts.tasks}}</text><text class="stat-label">可领任务</text></view>
+          <view class="stat-card"><text class="stat-num">{{counts.submitted}}</text><text class="stat-label">审核中</text></view>
+        </view>
+        <view wx:if="{{counts.resubmit}}" class="shell-card">
+          <view class="card-title">待你处理</view>
+          <view wx:for="{{resubmit}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="openCapture">
+            <view class="row-main">
+              <view class="row-title">{{item.title}}</view>
+              <view class="row-desc">审核意见：{{item.review_note || '按反馈补拍后重新提交'}}</view>
+            </view>
+            <text class="row-arrow">›</text>
+          </view>
+        </view>
+      </block>
+
+      <block wx:if="{{caps.can_help_legal}}">
+        <view class="stat-row" bindtap="goLegal">
+          <view class="stat-card {{counts.legal ? 'alert' : ''}}"><text class="stat-num">{{counts.legal}}</text><text class="stat-label">待接工单</text></view>
+          <view class="stat-card"><text class="stat-num">{{legalMine.length}}</text><text class="stat-label">我的工单</text></view>
+        </view>
+      </block>
+    </block>
+
+    <!-- 采集：按状态分区，先处理退回的 -->
+    <block wx:elif="{{tab === 'collect'}}">
+      <view wx:if="{{resubmit.length}}" class="shell-card">
+        <view class="card-title alert-text">需补拍 · {{resubmit.length}}</view>
+        <view wx:for="{{resubmit}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="openCapture">
+          <view class="row-main">
+            <view class="row-title">{{item.title}}</view>
+            <view class="row-desc">审核意见：{{item.review_note || '—'}}</view>
+          </view>
+          <text class="row-arrow">›</text>
+        </view>
+      </view>
+
+      <view class="shell-card">
+        <view class="card-title">待领取任务 · {{tasks.length}}</view>
+        <view wx:if="{{!tasks.length}}" class="shell-empty">暂无任务</view>
+        <view wx:for="{{tasks}}" wx:key="id" class="row">
+          <view class="row-main">
+            <view class="row-title">{{item.title}}</view>
+            <view class="row-desc">{{item.description}}</view>
+          </view>
+          <button wx:if="{{item.collectable && !item.mine_claimed}}" class="row-btn" data-id="{{item.id}}" bindtap="claim">领取</button>
+          <text wx:elif="{{item.mine_claimed}}" class="row-tag">我已领取</text>
+          <text wx:else class="row-tag wait">他人采集中</text>
+        </view>
+      </view>
+
+      <view class="shell-card">
+        <view class="card-title">进行中 · {{drafting.length}}</view>
+        <view wx:if="{{!drafting.length}}" class="shell-empty">没有未提交的草稿</view>
+        <view wx:for="{{drafting}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="openCapture">
+          <view class="row-main"><view class="row-title">{{item.title}}</view><view class="row-desc">草稿 · 版本 {{item.revision}}</view></view>
+          <text class="row-arrow">›</text>
+        </view>
+      </view>
+
+      <view class="shell-card">
+        <view class="card-title">已提交 · {{submitted.length}}</view>
+        <view wx:if="{{!submitted.length}}" class="shell-empty">还没有提交记录</view>
+        <view wx:for="{{submitted}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="openCapture">
+          <view class="row-main">
+            <view class="row-title">{{item.title}}<text class="row-tag">{{statusLabel[item.status]}}</text></view>
+            <view class="row-desc">版本 {{item.revision}}</view>
+          </view>
+          <text class="row-arrow">›</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 法律：待接 / 我的，两段分开 -->
+    <block wx:elif="{{tab === 'legal'}}">
+      <view class="shell-card">
+        <view class="card-title">待接工单 · {{legalOpen.length}}</view>
+        <view wx:if="{{!legalOpen.length}}" class="shell-empty">暂时没有人提问。</view>
+        <view wx:for="{{legalOpen}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="openHelp">
+          <view class="row-main">
+            <view class="row-title">{{item.topic}}</view>
+            <view class="row-desc">{{item.text}}</view>
+            <view class="row-desc">{{item.timeText}}</view>
+          </view>
+          <text class="row-arrow">›</text>
+        </view>
+      </view>
+
+      <view class="shell-card">
+        <view class="card-title">我的工单 · {{legalMine.length}}</view>
+        <view wx:if="{{!legalMine.length}}" class="shell-empty">还没有接过工单。</view>
+        <view wx:for="{{legalMine}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="openHelp">
+          <view class="row-main">
+            <view class="row-title">{{item.topic}}<text class="row-tag">{{item.statusText}}</text></view>
+            <view class="row-desc">{{item.text}}</view>
+          </view>
+          <text class="row-arrow">›</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 我的 -->
+    <block wx:elif="{{tab === 'mine'}}">
+      <view class="shell-card">
+        <view class="card-title">账号</view>
+        <view class="info-row"><text class="info-label">姓名</text><text class="info-value">{{me.display_name}}</text></view>
+        <view class="info-row"><text class="info-label">志愿者状态</text><text class="info-value">{{caps.volunteer_status}}</text></view>
+        <view class="info-row"><text class="info-label">导诊采集</text><text class="info-value">{{caps.can_collect ? '已开通' : '未开通'}}</text></view>
+        <view class="info-row"><text class="info-label">法律帮扶</text><text class="info-value">{{caps.can_help_legal ? '已核验' : '未核验'}}</text></view>
+      </view>
+      <view class="shell-card">
+        <view class="quick" bindtap="openApplication"><text class="quick-icon">表</text><view class="quick-copy"><view class="quick-title">志愿者资料</view><view class="quick-desc">修改或查看审核意见</view></view><text class="quick-arrow">›</text></view>
+        <view wx:if="{{caps.can_collect || caps.can_help_legal}}" class="quick" bindtap="openCredential"><text class="quick-icon">证</text><view class="quick-copy"><view class="quick-title">律师执业证</view><view class="quick-desc">{{caps.can_help_legal ? '已核验' : '上传后等待核验'}}</view></view><text class="quick-arrow">›</text></view>
+        <view class="quick" bindtap="logout"><text class="quick-icon">出</text><view class="quick-copy"><view class="quick-title">退出登录</view><view class="quick-desc">回到未登录状态</view></view><text class="quick-arrow">›</text></view>
+      </view>
+    </block>
+  </block>
+
+  <view class="shell-gap"></view>
+</view>
+<shell-nav items="{{tabs}}" active="{{tab}}" bindchange="switchTab" />

@@ -1,43 +1,25 @@
 <app-header back="{{true}}" title="导航采集与审核" fallback="/pages/navigation/index" />
 <view class="page workbench">
-  <view class="workbench-heading"><view class="page-title">导航工作台</view><text wx:if="{{!me.user || me.user.synthetic}}" class="environment">测试环境</text></view>
-  <view wx:if="{{loading && !switching}}" class="card loading-card">正在读取账号与工作台…</view>
-  <view wx:elif="{{pickerOpen || !me.user}}" class="card account-picker">
-    <view class="picker-heading"><view class="picker-title">选择测试账号</view><button wx:if="{{me.user}}" class="text-button" disabled="{{switching}}" bindtap="cancelSwitch">取消</button></view>
-    <view class="picker-description">无需手机号和密码，先选择你要体验的角色。</view>
-    <radio-group bindchange="selectAccount">
-      <label wx:for="{{testAccounts}}" wx:key="id" class="account-option {{selectedAccountId === item.id ? 'selected' : ''}}">
-        <view class="account-icon"><image src="/assets/icons/{{item.icon}}-teal.png" /></view>
-        <view class="account-copy">
-          <view class="account-title">{{item.label}}<text class="account-name">{{item.name}}</text></view>
-          <view class="account-description">{{item.description}}</view>
-        </view>
-        <radio value="{{item.id}}" checked="{{selectedAccountId === item.id}}" disabled="{{busy || loading || switching}}" color="#0E7C86" aria-label="{{item.label}} {{item.name}}" />
-      </label>
-      <block wx:if="{{legacyExpanded}}">
-        <view class="legacy-title">原有演示账号</view>
-        <label wx:for="{{accounts}}" wx:key="id" class="account-option legacy-option {{selectedAccountId === item.id ? 'selected' : ''}}">
-          <view class="account-copy"><view class="account-title">{{item.label}}</view><view class="account-description">保留原账号中的任务和记录</view></view>
-          <radio value="{{item.id}}" checked="{{selectedAccountId === item.id}}" disabled="{{busy || loading || switching}}" color="#0E7C86" aria-label="{{item.label}}" />
-        </label>
-      </block>
-    </radio-group>
-    <view wx:if="{{error}}" class="inline-error">{{error}}</view>
-    <button class="primary-action" disabled="{{busy || loading || switching}}" loading="{{switching}}" bindtap="enterSelectedAccount">{{switching ? '正在进入…' : selectedAction}}</button>
-    <view class="secondary-actions">
-      <button class="text-button" disabled="{{switching}}" bindtap="toggleLegacy">{{legacyExpanded ? '收起原有账号' : '更多测试账号'}}</button>
-      <button class="text-button" disabled="{{switching}}" bindtap="openLogin">手机号登录</button>
-    </view>
-    <view class="test-caption">路线图片由 AI 生成，仅供功能测试。</view>
+  <view class="workbench-heading"><view class="page-title">导航工作台</view><text wx:if="{{me.user && me.user.synthetic}}" class="environment">测试环境</text></view>
+
+  <view wx:if="{{loading}}" class="card loading-card">正在读取工作台…</view>
+
+  <view wx:elif="{{!me.user}}" class="card current-account">
+    <view class="current-account-top"><text class="current-label">还没登录</text></view>
+    <view class="current-hint">登录后按账号权限显示采集或审核入口。</view>
+    <button class="primary-action" bindtap="openLogin">手机号登录</button>
   </view>
+
   <view wx:else class="card current-account">
-    <view class="current-account-top"><text class="current-label">当前账号</text><button class="text-button" disabled="{{busy || loading}}" bindtap="openAccountPicker">切换账号</button></view>
+    <view class="current-account-top"><text class="current-label">当前账号</text></view>
     <view class="current-name">{{me.user.display_name}}<text class="role-badge">{{roleLabel}}</text></view>
     <view class="current-hint">{{perms.review ? '处理他人提交，管理路线发布与停用。' : perms.collect ? '领取任务并采集照片，提交后由他人审核。' : '浏览已发布路线，查看节点照片并反馈问题。'}}</view>
     <button wx:if="{{!perms.collect && !perms.review}}" class="primary-action" bindtap="goNavigation">查看已发布路线</button>
   </view>
-  <view wx:if="{{error && !pickerOpen && me.user}}" class="card error"><view>{{error}}</view><button class="outline-button" bindtap="reload">重新加载</button></view>
-  <block wx:if="{{me.user && !pickerOpen && !loading && !switching}}">
+
+  <view wx:if="{{error && me.user}}" class="card error"><view>{{error}}</view><button class="outline-button" bindtap="reload">重新加载</button></view>
+
+  <block wx:if="{{me.user && !loading}}">
   <view class="card" wx:if="{{perms.collect}}">
     <view class="section-title">采集任务</view>
     <view wx:if="{{!tasks.length}}" class="empty">暂无任务</view>
@@ -73,4 +55,3 @@
   </view>
   </block>
 </view>
-

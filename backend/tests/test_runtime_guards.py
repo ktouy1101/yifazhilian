@@ -59,3 +59,18 @@ def test_admin_file_ignores_comments_and_blanks(monkeypatch, tmp_path):
     path.write_text("# 注释\n\n19000000001\n19000000002  # 尾注\n", encoding="utf-8")
     monkeypatch.setattr(config, "ADMIN_FILE", path)
     assert config._admin_file_numbers() == {"19000000001", "19000000002"}
+
+
+def test_allowed_hosts_env_extends_defaults(monkeypatch):
+    """部署到域名后，TrustedHost 必须认识它，否则所有请求都会 400。"""
+    monkeypatch.setattr(config, "_read_kv", lambda env_file, environ: {
+        "YIFAZHILIAN_ALLOWED_HOSTS": "api.example.com, example.org;api.example.com"})
+    hosts = config.allowed_hosts()
+    assert "api.example.com" in hosts and "example.org" in hosts
+    assert hosts.count("api.example.com") == 1
+    assert "localhost" in hosts
+
+
+def test_allowed_hosts_defaults_without_env(monkeypatch):
+    monkeypatch.setattr(config, "_read_kv", lambda env_file, environ: {})
+    assert config.allowed_hosts() == ["127.0.0.1", "localhost", "testserver", "192.168.199.126"]

@@ -116,11 +116,4 @@ button.disconnect-button { color: #51686f; background: #fff; border: 1rpx solid 
 .gender-pick.selected{background:#0E7C86;color:#fff}
 .empty-hint{padding:40rpx 0;text-align:center;color:#8AA0A6;font-size:24rpx}
 .primary-button.full-button{margin-top:40rpx;width:100%}
-.account-row{display:flex;align-items:center;gap:16rpx;padding:20rpx 0;border-bottom:2rpx dashed #E2ECEE}
-.account-row:last-child{border-bottom:0}
-.account-copy{flex:1}
-.account-name{font-size:27rpx;font-weight:600}
-.account-role{font-size:22rpx;color:#8AA0A6;margin-top:2rpx}
-.account-current{font-size:22rpx;color:#2C7A59;font-weight:600}
-.account-switch{font-size:22rpx;color:#0E7C86;font-weight:600}
 .full-width{width:100%;margin-top:20rpx}

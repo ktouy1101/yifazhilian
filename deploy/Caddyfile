@@ -1,0 +1,16 @@
+# Caddy 自动申请并续期 Let's Encrypt 证书；DOMAIN 来自 deploy/env
+{$DOMAIN} {
+	encode gzip
+	# 后端只监听内部网络，不直接暴露 8000
+	reverse_proxy api:8000
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+	}
+	log {
+		output file /data/access.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}

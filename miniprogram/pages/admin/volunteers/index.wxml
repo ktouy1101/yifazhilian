@@ -1,0 +1,23 @@
+<app-header title="志愿者申请" back="{{true}}" fallback="/pages/admin/index" />
+<view class="admin-page">
+  <view class="admin-head">
+    <view class="admin-sub">核对实名与医院后通过；通过即开放采集权限，拒绝后对方可重新申请。</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="admin-group"><view class="empty">正在读取…</view></view>
+  <view wx:elif="{{error}}" class="admin-group"><view class="empty">{{error}}</view></view>
+  <view wx:elif="{{!items.length}}" class="admin-group"><view class="empty">没有待审核的申请。</view></view>
+
+  <view wx:else class="admin-group">
+    <view wx:for="{{items}}" wx:key="user_id" class="admin-row admin-row-stack">
+      <view class="admin-row-main">
+        <view class="admin-row-title">{{item.real_name}} · {{item.display_name}}</view>
+        <view class="admin-row-detail">医院 {{item.hospital_id}} · 提交于 {{item.timeText}}</view>
+      </view>
+      <view class="admin-actions">
+        <button class="admin-btn small approve" data-id="{{item.user_id}}" data-decision="approve" bindtap="review" disabled="{{busy}}">通过</button>
+        <button class="admin-btn small" data-id="{{item.user_id}}" data-decision="reject" bindtap="review" disabled="{{busy}}">拒绝</button>
+      </view>
+    </view>
+  </view>
+</view>

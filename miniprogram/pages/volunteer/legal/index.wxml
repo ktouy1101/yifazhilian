@@ -1,0 +1,29 @@
+<app-header title="法律帮扶" back="{{true}}" fallback="/pages/volunteer/index" />
+<view class="vol-page">
+  <view wx:if="{{loading}}" class="vol-card">正在读取…</view>
+
+  <block wx:else>
+    <view class="vol-card">
+      <view class="vol-card-title">
+        接单资格
+        <text class="vol-badge {{caps.can_help_legal ? '' : 'wait'}}">{{caps.can_help_legal ? '已核验' : '未开放'}}</text>
+      </view>
+      <view class="vol-text">
+        {{caps.can_help_legal ? '可以接患者的法律工单，并在工单里回复。' : '上传律师执业证，审核员看图核验通过后才能接工单。'}}
+      </view>
+      <button wx:if="{{caps.can_help_legal}}" class="vol-btn" bindtap="openLegalHelp">查看待接工单</button>
+    </view>
+
+    <view class="vol-card">
+      <view class="vol-card-title">我的凭证</view>
+      <view wx:if="{{!credentials.length}}" class="vol-text">还没有上传过凭证。</view>
+      <view wx:for="{{credentials}}" wx:key="id" class="vol-note">
+        {{item.kindText}} · {{item.statusText}} · {{item.timeText}}{{item.note ? ' · ' + item.note : ''}}
+      </view>
+      <button class="vol-btn" bindtap="uploadCredential" loading="{{uploading}}" disabled="{{uploading}}">上传执业证</button>
+      <view class="vol-note">只用于资格核验，存为私有图片；审核员可看图，其他人读不到。</view>
+    </view>
+
+    <view wx:if="{{error}}" class="vol-error">{{error}}</view>
+  </block>
+</view>

@@ -28,3 +28,6 @@ Thumbs.db
 # pytest 临时目录（basetemp 落到仓库内时产生）
 pytest-of-*/
 backend/pytest-of-*/
+
+# 部署时生成的实际配置（含密钥）
+deploy/env

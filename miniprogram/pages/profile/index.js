@@ -21,13 +21,7 @@ Page({
     status: '',
     me: null,
     // 资料编辑表单
-    profileForm: {nickname: '', age: '', gender: '未填', bed_location: '', allergies: '', emergency_name: '', emergency_phone: '', doctor_phone: ''},
-    accountList: [
-      {id: 'demo-patient-001', label: '合成患者 001', role: 'patient'},
-      {id: 'demo-patient-002', label: '合成患者 002', role: 'patient'},
-      {id: 'demo-volunteer-001', label: '演示志愿者', role: 'volunteer'},
-      {id: 'demo-reviewer-001', label: '演示审核员', role: 'volunteer'}
-    ]
+    profileForm: {nickname: '', age: '', gender: '未填', bed_location: '', allergies: '', emergency_name: '', emergency_phone: '', doctor_phone: ''}
   },
   onShow() {
     const app = getApp()
@@ -39,8 +33,6 @@ Page({
   onHide() { this.setData({sheet: ''}) },
   noop() {},
   openNavigationWorkbench() { wx.navigateTo({url: '/pages/navigation-workbench/index'}) },
-  openVolunteer() { wx.navigateTo({url: '/pages/volunteer/index'}) },
-  openAdmin() { wx.navigateTo({url: '/pages/admin/index'}) },
 
   openSettings() { this.setData({sheet: 'settings'}); this.refresh() },
   openProfile() {
@@ -190,25 +182,5 @@ Page({
       await this.refresh()
     } catch (error) { showError(error) }
     finally { this.setData({authorizationBusy: false}) }
-  },
-
-  async switchAccount(e) {
-    if (this.data.authorizationBusy) return
-    const id = e.currentTarget.dataset.id
-    const role = e.currentTarget.dataset.role
-    const currentId = this.data.me && this.data.me.id
-    if (id === currentId) return
-    this.setData({authorizationBusy: true})
-    try {
-      await api.logout()
-      await api.login(id, role)
-      wx.showToast({title: '已切换', icon: 'success'})
-      await this.refresh()
-    } catch (e) { showError(e) }
-    finally { this.setData({authorizationBusy: false}) }
-  },
-
-  async reloginWechat() {
-    wx.navigateTo({url: '/pages/login/index'})
   }
 })

@@ -29,6 +29,15 @@ class PhoneLoginInput(StrictModel):
     code: str = Field(pattern=r"^\d{6}$")
 
 
+class PasswordLoginInput(StrictModel):
+    phone: str = Field(pattern=r"^1[3-9]\d{9}$")
+    password: str = Field(min_length=6, max_length=64)
+
+
+class SetPasswordInput(StrictModel):
+    password: str = Field(min_length=6, max_length=64)
+
+
 class ConsentInput(StrictModel):
     scope: Scope
     granted: Literal[True] = True
@@ -136,6 +145,25 @@ class VolunteerApplyInput(StrictModel):
 class VolunteerReviewInput(StrictModel):
     decision: Literal["approve", "reject"]
     note: str = Field(default="", max_length=200)
+
+
+class RoleInput(StrictModel):
+    role: Literal["volunteer", "reviewer"]
+    action: Literal["grant", "revoke"]
+
+
+class CredentialReviewInput(StrictModel):
+    decision: Literal["approve", "reject"]
+    note: str = Field(default="", max_length=200)
+
+
+class LegalHelpCreate(StrictModel):
+    topic: str = Field(min_length=2, max_length=40)
+    text: str = Field(min_length=5, max_length=1000)
+
+
+class LegalHelpMessageInput(StrictModel):
+    text: str = Field(min_length=1, max_length=1000)
 
 
 class SubmissionRevise(StrictModel):

@@ -6,5 +6,6 @@
     </button>
     <view wx:else class="logo"><image src="/assets/icons/logo-white.png" class="logo-image"/></view>
     <view class="brand"><text class="title">{{title}}</text><text wx:if="{{subtitle}}" class="subtitle">{{subtitle}}</text></view>
+    <button wx:if="{{!loggedIn}}" class="login-entry" bindtap="openLogin" hover-class="login-pressed" aria-label="登录">登录</button>
   </view>
 </view>

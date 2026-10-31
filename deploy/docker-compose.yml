@@ -1,0 +1,34 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: yfz-api
+    restart: unless-stopped
+    env_file:
+      - ./env
+    volumes:
+      - yfz-data:/data
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2
+    container_name: yfz-caddy
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - ./env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  yfz-data:
+  caddy-data:
+  caddy-config:

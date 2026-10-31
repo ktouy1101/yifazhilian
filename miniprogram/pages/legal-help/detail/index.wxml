@@ -1,0 +1,31 @@
+<app-header title="工单详情" back="{{true}}" fallback="/pages/legal-help/index" />
+<view class="page help-page">
+  <view wx:if="{{loading}}" class="card">正在读取…</view>
+  <view wx:elif="{{error}}" class="card"><view class="help-error">{{error}}</view></view>
+
+  <block wx:else>
+    <view class="card">
+      <view class="help-title">{{request.topic}}</view>
+      <view class="help-row-time">{{statusText}} · 更新于 {{timeText}}</view>
+      <view class="help-row-text">{{request.text}}</view>
+      <button wx:if="{{canHelp && request.status === 'open'}}" class="primary" bindtap="claim">接这个工单</button>
+    </view>
+
+    <view class="card">
+      <view class="help-title">往来回复</view>
+      <view wx:if="{{!messages.length}}" class="help-hint">还没有回复。</view>
+      <view wx:for="{{messages}}" wx:key="id" class="msg {{item.role === 'volunteer' ? 'msg-volunteer' : 'msg-patient'}}">
+        <view class="msg-role">{{item.role === 'volunteer' ? '法律志愿者' : '提问人'}} · {{item.timeText}}</view>
+        <view class="msg-text">{{item.text}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{viewerRole !== 'reviewer'}}" class="card">
+      <textarea class="help-textarea" value="{{reply}}" bindinput="onReply" maxlength="500" placeholder="写下你的回复或补充" />
+      <button class="primary" bindtap="send" loading="{{sending}}" disabled="{{sending}}">发送</button>
+    </view>
+    <view wx:else class="card">
+      <view class="help-hint">审核员只读：接单与回复属于法律志愿者的工作。</view>
+    </view>
+  </block>
+</view>

@@ -13,6 +13,14 @@
   <view class="doc-body">
     <scroll-view class="chat-scroll" scroll-y scroll-into-view="{{scrollTo}}" scroll-with-animation show-scrollbar="{{false}}" bindtap="closeMenu">
       <view class="chat-content">
+        <view wx:if="{{domain === 'legal'}}" class="human-entry" bindtap="openHumanHelp">
+          <view class="human-entry-icon"><image src="/assets/icons/scales-white.png" /></view>
+          <view class="human-entry-copy">
+            <view class="human-entry-title">真人法律志愿者</view>
+            <view class="human-entry-text">把问题说出来，志愿者接单后在这里回复</view>
+          </view>
+          <text class="human-entry-arrow">›</text>
+        </view>
         <view class="daytag">今天 · {{previewMode || role === 'volunteer' ? '演示对话' : '本机联调'}}</view>
         <view wx:for="{{messages}}" wx:key="id" id="{{item.id}}" class="msg {{item.role === 'user' ? 'user' : 'ai'}} {{item.cards.length ? 'tour-msg' : ''}}">
           <view wx:if="{{item.role !== 'user'}}" class="avatar ai-avatar"><image src="{{domain === 'legal' ? '/assets/icons/scales-white.png' : '/assets/icons/chat-white.png'}}" /></view>

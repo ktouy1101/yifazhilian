@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
   display_name TEXT NOT NULL, synthetic INTEGER NOT NULL DEFAULT 0 CHECK(synthetic IN (0,1)),
   openid TEXT UNIQUE,
   phone TEXT UNIQUE,
-  deleted_at TEXT
+  deleted_at TEXT,
+  password_hash TEXT
 );
 CREATE TABLE IF NOT EXISTS sessions (
   token_hash TEXT PRIMARY KEY CHECK(length(token_hash)=64),
@@ -316,5 +317,41 @@ CREATE TABLE IF NOT EXISTS volunteer_profiles (
   reviewed_at TEXT,
   updated_at  TEXT NOT NULL
 );
+-- v11 法律帮扶：律师凭证、求助工单与往来消息。
+-- 凭证图片只存私有 BLOB，仅本人与审核员可通过鉴权接口读取。
+CREATE TABLE IF NOT EXISTS volunteer_credentials (
+  id          TEXT PRIMARY KEY,
+  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind        TEXT NOT NULL CHECK(kind IN ('lawyer_license','legal_aid')),
+  mime        TEXT NOT NULL,
+  size        INTEGER NOT NULL,
+  data        BLOB NOT NULL,
+  status      TEXT NOT NULL CHECK(status IN ('pending','approved','rejected')),
+  note        TEXT,
+  reviewed_by TEXT REFERENCES users(id),
+  reviewed_at TEXT,
+  created_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS volunteer_credentials_user ON volunteer_credentials(user_id,status);
+CREATE TABLE IF NOT EXISTS legal_help_requests (
+  id           TEXT PRIMARY KEY,
+  patient_id   TEXT NOT NULL REFERENCES users(id),
+  topic        TEXT NOT NULL,
+  text         TEXT NOT NULL,
+  status       TEXT NOT NULL CHECK(status IN ('open','claimed','answered','closed')),
+  volunteer_id TEXT REFERENCES users(id),
+  created_at   TEXT NOT NULL,
+  updated_at   TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS legal_help_requests_status ON legal_help_requests(status,updated_at);
+CREATE TABLE IF NOT EXISTS legal_help_messages (
+  id         TEXT PRIMARY KEY,
+  request_id TEXT NOT NULL REFERENCES legal_help_requests(id) ON DELETE CASCADE,
+  sender_id  TEXT NOT NULL REFERENCES users(id),
+  role       TEXT NOT NULL CHECK(role IN ('patient','volunteer')),
+  text       TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS legal_help_messages_request ON legal_help_messages(request_id,created_at);
 -- Database.initialize advances user_version after the data migration commits.
 COMMIT;

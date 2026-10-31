@@ -520,6 +520,8 @@ Page({
   },
   back() { wx.navigateBack({delta: 1, fail: () => wx.switchTab({url: '/pages/home/index'})}) },
   toggleMenu() { this.setData({menuOpen: !this.data.menuOpen}) },
+  // 法知区的真人服务窗口：问题交给已核验的法律志愿者接单回复。
+  openHumanHelp() { wx.navigateTo({url: '/pages/legal-help/index'}) },
   closeMenu() { this.setData({menuOpen: false}) },
   switchRole() {
     if (this.data.busy) return

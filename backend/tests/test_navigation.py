@@ -290,7 +290,7 @@ def test_persistence_across_reopening(client, accounts, database):
         saved = req(again, accounts, R, "GET", "/submissions/" + sub["id"])
         assert len(saved["versions"]) == 1 and saved["history"][-1]["action"] == "approve"
     with reopened.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 10
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 12
 
 
 def test_actual_v4_schema_migrates_without_replacing_existing_data(tmp_path):
@@ -305,7 +305,7 @@ def test_actual_v4_schema_migrates_without_replacing_existing_data(tmp_path):
         assert not c.execute("SELECT name FROM sqlite_master WHERE name='navigation_versions'").fetchone()
     upgraded = Database(legacy_path)
     with upgraded.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 10
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 12
         assert c.execute("SELECT title FROM navigation_submissions WHERE id='legacy-sub'").fetchone()[0] == "保留草稿"
         assert c.execute("SELECT claimed_by FROM navigation_tasks WHERE id='legacy-task'").fetchone()[0] == "legacy"
         assert c.execute("SELECT count(*) FROM navigation_versions").fetchone()[0] == 0

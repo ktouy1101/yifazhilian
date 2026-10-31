@@ -4,24 +4,42 @@
 .brand-name{font-size:48rpx;font-weight:800;color:#10353C;letter-spacing:2rpx}
 .brand-sub{font-size:24rpx;color:#8AA0A6;margin-top:12rpx;letter-spacing:1rpx}
 .form-card{background:#fff;border-radius:32rpx;padding:52rpx 40rpx 40rpx;box-shadow:0 16rpx 48rpx -28rpx rgba(16,66,74,.22)}
-.roles{display:flex;gap:12rpx;margin-bottom:14rpx}
-.role-tab{flex:1;text-align:center;font-size:24rpx;line-height:72rpx;height:72rpx;border-radius:16rpx;background:#F2F7F8;color:#51686F}
-.role-tab.active{background:#0E7C86;color:#fff;font-weight:600}
-.role-hint{font-size:21rpx;color:#8AA0A6;margin-bottom:32rpx;line-height:1.5}
+.tip-row{display:flex;align-items:center;justify-content:space-between;gap:12rpx;margin-top:18rpx}
+.join-link{display:inline-flex;align-items:center;gap:6rpx;flex:none;padding:8rpx 18rpx;border-radius:24rpx;background:#F2F7F8;color:#5B8C90;font-size:20rpx;transition:background .25s ease,color .25s ease,transform .2s ease}
+.join-link.on{background:#E4F4EE;color:#0A5A61;font-weight:600;animation:join-pop .3s ease}
+.join-pressed{transform:scale(.96)}
+.join-check{display:inline-block;max-width:0;opacity:0;transform:scale(.4);overflow:hidden;color:#0A5A61;transition:max-width .22s ease,opacity .22s ease,transform .22s ease}
+.join-link.on .join-check{max-width:26rpx;opacity:1;transform:scale(1)}
+.join-arrow{color:#9AAFB4;transition:transform .25s ease}
+.join-link.on .join-arrow{transform:rotate(90deg);color:#0A5A61}
+@keyframes join-pop{0%{transform:scale(.94)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
 .field{margin-bottom:36rpx}
 .field-label{display:block;font-size:24rpx;color:#51686F;margin-bottom:14rpx;font-weight:500}
 .field-input{background:#F2F7F8;border-radius:16rpx;padding:0 28rpx;height:92rpx;line-height:92rpx;font-size:30rpx;box-sizing:border-box}
-.code-row{display:flex;gap:16rpx;align-items:stretch}
-.code-input{flex:1;min-width:0}
-.code-btn{flex-shrink:0;width:180rpx;height:92rpx;line-height:92rpx;font-size:24rpx;background:#0E7C86;color:#fff;border-radius:16rpx;padding:0;font-weight:600}
+.code-row{display:flex;gap:16rpx;align-items:stretch;width:100%;box-sizing:border-box}
+.code-input{flex:1 1 auto;width:0;min-width:0}
+.code-btn{flex:0 0 180rpx;width:180rpx;height:92rpx;line-height:92rpx;font-size:24rpx;background:#0E7C86;color:#fff;border-radius:16rpx;padding:0;font-weight:600;box-sizing:border-box}
 .code-btn.disabled{background:#C3D5D8}
 .code-btn::after{border:none}
 .login-btn{width:100%;background:linear-gradient(135deg,#0E7C86,#0A5A61);color:#fff;border-radius:18rpx;font-size:30rpx;font-weight:700;line-height:96rpx;margin-top:12rpx;padding:0}
 .login-btn::after{border:none}
 .login-btn[disabled]{opacity:.6}
-.tip{text-align:center;color:#8AA0A6;font-size:22rpx;margin-top:24rpx}
+.tip{flex:1;min-width:0;color:#8AA0A6;font-size:20rpx}
 .recent{margin-top:48rpx}
 .recent-title{font-size:24rpx;color:#8AA0A6;margin-bottom:16rpx;padding:0 16rpx}
 .recent-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:20rpx;padding:28rpx 32rpx;margin-bottom:16rpx}
 .recent-phone{font-size:28rpx;font-weight:600;color:#10353C}
 .recent-label{font-size:24rpx;color:#0E7C86}
+
+/* 志愿者注册模式：整页换一套版式，不只是换个标签 */
+.vol-mode{background:linear-gradient(180deg,#F3F8F9 0%,#EAF6F1 200rpx,#F3F8F9 420rpx)}
+.brand-vol .brand-logo.vol{background:linear-gradient(135deg,#0E7C86,#2C7A59);box-shadow:0 20rpx 40rpx -16rpx rgba(44,122,89,.45);animation:mode-in .32s ease}
+.brand-vol .brand-name{animation:mode-in .32s ease}
+.brand-normal .brand-logo,.brand-normal .brand-name{animation:mode-in .32s ease}
+.form-card.vol{border:2rpx solid #CFE7E2;background:#FBFEFD;animation:mode-in .3s ease}
+@keyframes mode-in{0%{opacity:0;transform:translateY(12rpx)}100%{opacity:1;transform:translateY(0)}}
+
+/* 验证码 / 密码 登录方式切换 */
+.mode-switch{display:flex;gap:6rpx;background:#E6EFF0;padding:6rpx;border-radius:22rpx;margin-bottom:28rpx}
+.mode-item{flex:1;text-align:center;padding:14rpx 4rpx;border-radius:18rpx;font-size:23rpx;color:#51686F;transition:background .2s ease,color .2s ease}
+.mode-item.on{background:#fff;color:#0E7C86;font-weight:700;box-shadow:0 5rpx 15rpx rgba(16,66,74,.07)}

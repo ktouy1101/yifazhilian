@@ -1,0 +1,46 @@
+<app-header title="志愿者申请" back="{{true}}" fallback="/pages/volunteer/index" />
+<view class="vol-page">
+  <view wx:if="{{loading}}" class="vol-card">正在读取…</view>
+
+  <view wx:elif="{{status === 'guest'}}" class="vol-card">
+    <view class="vol-card-title">先登录</view>
+    <view class="vol-text">登录后才能提交志愿者申请。</view>
+    <button class="vol-btn" bindtap="openLogin">去登录</button>
+  </view>
+
+  <block wx:else>
+    <view class="vol-card">
+      <view class="vol-card-title">
+        当前状态
+        <text class="vol-badge {{status === 'approved' ? '' : status === 'rejected' || status === 'suspended' ? 'bad' : 'wait'}}">
+          {{status === 'approved' ? '已通过' : status === 'pending' ? '审核中' : status === 'rejected' ? '未通过' : status === 'suspended' ? '已暂停' : '未申请'}}
+        </text>
+      </view>
+      <view class="vol-text">
+        {{status === 'approved' ? '已获得采集能力；法律帮扶另需凭证核验。' : status === 'pending' ? '审核员核对实名与医院后会处理。' : status === 'rejected' ? '可以修改后重新提交。' : status === 'suspended' ? '请联系审核员恢复权限。' : '填写真实姓名并确认培训。'}}
+      </view>
+      <view wx:if="{{profile && profile.note}}" class="vol-note">审核意见：{{profile.note}}</view>
+      <view wx:if="{{reviewedText}}" class="vol-note">审核时间：{{reviewedText}}</view>
+      <view wx:if="{{profile && profile.hospital_id}}" class="vol-note">所属医院：{{profile.hospital_id}}</view>
+    </view>
+
+    <view wx:if="{{status === 'none' || status === 'rejected'}}" class="vol-card">
+      <view class="vol-card-title">提交申请</view>
+      <view class="vol-field">
+        <text class="vol-label">所属医院</text>
+        <input class="vol-input" value="{{hospitalId}}" bindinput="onHospital" placeholder="如 demo-hospital" />
+      </view>
+      <view class="vol-field">
+        <text class="vol-label">真实姓名（用于核验）</text>
+        <input class="vol-input" value="{{realName}}" bindinput="onName" maxlength="16" placeholder="请填写真实姓名" />
+      </view>
+      <view class="vol-field">
+        <switch checked="{{training}}" bindchange="onTraining" color="#0E7C86" />
+        <view class="vol-note">我已了解志愿者只做导诊与流程指引，不诊断、不解释检查结果、不代替医护</view>
+      </view>
+      <button class="vol-btn" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">提交申请</button>
+    </view>
+
+    <view wx:if="{{error}}" class="vol-error">{{error}}</view>
+  </block>
+</view>

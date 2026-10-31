@@ -1,0 +1,17 @@
+# 构建上下文是仓库根目录，这里排除不需要进镜像的东西
+.git
+.github
+node_modules
+miniprogram
+ui-screenshots
+.work
+docs
+tests
+deploy
+**/__pycache__
+**/*.pyc
+backend/.env
+backend/data
+backend/pytest-of-*
+backend/.venv
+backend/fixtures

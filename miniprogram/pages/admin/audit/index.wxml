@@ -1,0 +1,20 @@
+<app-header title="审计" back="{{true}}" fallback="/pages/admin/index" />
+<view class="admin-page">
+  <view class="admin-head">
+    <view class="admin-sub">最近 50 条审核与授权动作，包含操作人、对象与时间。</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="admin-group"><view class="empty">正在读取…</view></view>
+  <view wx:elif="{{error}}" class="admin-group"><view class="empty">{{error}}</view></view>
+  <view wx:elif="{{!items.length}}" class="admin-group"><view class="empty">还没有记录。</view></view>
+
+  <view wx:else class="admin-group">
+    <view wx:for="{{items}}" wx:key="id" class="admin-row">
+      <view class="admin-row-main">
+        <view class="admin-row-title">{{item.actionText}}</view>
+        <view class="admin-row-detail">{{item.user_id}} → {{item.object_id}}</view>
+      </view>
+      <text class="admin-row-stage">{{item.timeText}}</text>
+    </view>
+  </view>
+</view>

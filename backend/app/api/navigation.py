@@ -18,9 +18,17 @@ EDITABLE = {"draft", "changes_requested"}
 
 
 def _perms(c, uid):
+    """导航能力位。审核权取"成员位或 reviewer 角色"的并集：
+
+    管理员是通过 user_roles 授权的，旧库里可能还留着 can_review=0 的成员行，
+    只看成员位会把人误判成"体验员"。
+    """
     row = c.execute("SELECT * FROM navigation_memberships WHERE user_id=?", (uid,)).fetchone()
+    roles = {item["role"] for item in
+             c.execute("SELECT role FROM user_roles WHERE user_id=?", (uid,))}
     return {"hospital_id": row["hospital_id"] if row else "demo-hospital",
-            "collect": bool(row and row["can_collect"]), "review": bool(row and row["can_review"]),
+            "collect": bool(row and row["can_collect"]),
+            "review": bool((row and row["can_review"]) or "reviewer" in roles),
             "browse": True, "feedback": True}
 
 

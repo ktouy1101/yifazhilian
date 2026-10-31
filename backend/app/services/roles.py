@@ -49,6 +49,10 @@ def capabilities(connection, user) -> dict:
     profile = volunteer_profile(connection, user["id"])
     status = profile["status"] if profile else "none"
     kinds = [kind for kind in ((profile["kinds"] if profile else "") or "").split(",") if kind]
+    # 法律帮扶要求：志愿者档案已通过 + 声明 legal + 至少一张执业证已核验。
+    credential = connection.execute(
+        "SELECT 1 FROM volunteer_credentials WHERE user_id=? AND status='approved' LIMIT 1",
+        (user["id"],)).fetchone()
     return {
         "roles": sorted(roles | ({user["role"]} if user.get("role") else set())),
         "is_reviewer": REVIEWER in roles or bool(member and member["can_review"]),
@@ -56,7 +60,7 @@ def capabilities(connection, user) -> dict:
         "volunteer_status": status,
         "volunteer_kinds": kinds,
         "can_collect": bool(member and member["can_collect"]),
-        "can_help_legal": "legal" in kinds and status == "approved",
+        "can_help_legal": "legal" in kinds and status == "approved" and credential is not None,
     }
 
 
@@ -70,7 +74,9 @@ def grant_admin(connection, user, phone: str | None = None) -> bool:
     if not phone or phone not in admin_phones():
         return False
     grant(connection, user["id"], REVIEWER)
+    # 旧数据里可能已有 can_review=0 的成员行，必须覆盖而不是忽略，
+    # 否则管理台能进、导航工作台却仍被当成"体验员"。
     connection.execute(
-        "INSERT OR IGNORE INTO navigation_memberships(user_id,can_collect,can_review) VALUES(?,0,1)",
-        (user["id"],))
+        "INSERT INTO navigation_memberships(user_id,can_collect,can_review) VALUES(?,0,1) "
+        "ON CONFLICT(user_id) DO UPDATE SET can_review=1", (user["id"],))
     return True

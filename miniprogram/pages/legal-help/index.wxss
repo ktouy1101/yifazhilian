@@ -1,0 +1,15 @@
+.help-page { padding: 20rpx 28rpx 60rpx; }
+.help-page .card { background:#fff; border-radius:24rpx; padding:26rpx; margin-bottom:20rpx; }
+.help-title { font-size:30rpx; font-weight:600; color:#17343A; }
+.help-hint { margin-top:8rpx; font-size:22rpx; line-height:1.6; color:#7A8F95; }
+.help-error { margin-top:12rpx; font-size:22rpx; color:#B44B3C; }
+.help-row { padding:20rpx 0; border-top:2rpx solid #EDF3F4; }
+.help-row-main { min-width:0; }
+.help-row-title { font-size:27rpx; color:#1F3B42; }
+.help-row-text { margin-top:6rpx; font-size:23rpx; line-height:1.6; color:#5B737A; }
+.help-row-time { margin-top:6rpx; font-size:20rpx; color:#9AAFB4; }
+.help-tag { margin-left:10rpx; padding:2rpx 10rpx; border-radius:8rpx; background:#E4F4EE; color:#0A5A61; font-size:19rpx; }
+.help-input { margin-top:16rpx; background:#F2F7F8; border-radius:14rpx; padding:0 22rpx; height:80rpx; line-height:80rpx; font-size:27rpx; }
+.help-textarea { margin-top:14rpx; background:#F2F7F8; border-radius:14rpx; padding:18rpx 22rpx; width:100%; height:200rpx; font-size:26rpx; box-sizing:border-box; }
+.primary { width:100%; margin-top:20rpx; border-radius:18rpx; background:linear-gradient(135deg,#0E7C86,#0A5A61); color:#fff; font-size:28rpx; font-weight:600; line-height:88rpx; padding:0; }
+.primary::after { border:none; }

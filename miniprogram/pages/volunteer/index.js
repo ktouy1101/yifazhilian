@@ -1,74 +1,34 @@
 const api = require('../../services/api')
 
-// 志愿者中心：申请 → 等待审核 → 通过后出现采集入口。
-// 页面只负责展示与提交；能不能采集由服务端 capabilities.can_collect 决定。
+// 志愿者中心首页：只放状态与入口，具体操作在子页面。
 Page({
-  data: {
-    loading: true,
-    status: 'none',       // guest / none / pending / approved / rejected / suspended
-    profile: null,
-    caps: {},
-    realName: '',
-    hospitalId: 'demo-hospital',
-    training: false,
-    submitting: false,
-    error: ''
-  },
+  data: {loading: true, status: 'none', profile: null, caps: {}, credentials: [], error: ''},
 
   onShow() { return this.load() },
 
   async load() {
-    if (!api.identity.getToken()) {
-      this.setData({loading: false, status: 'guest'})
-      return
-    }
+    if (!api.identity.getToken()) { this.setData({loading: false, status: 'guest'}); return }
     try {
       const result = await api.request('/volunteer/me')
       const profile = result.profile || null
+      const caps = result.capabilities || {}
+      let credentials = []
+      try { credentials = (await api.request('/volunteer/credentials')).items || [] } catch (e) { /* 无凭证时留空 */ }
       this.setData({
         loading: false,
         profile,
-        caps: result.capabilities || {},
+        caps,
+        credentials,
         status: (profile && profile.status) || 'none',
-        realName: (profile && profile.real_name) || this.data.realName,
-        hospitalId: (profile && profile.hospital_id) || this.data.hospitalId,
         error: ''
       })
     } catch (error) {
-      this.setData({loading: false, error: error.message || '读取申请状态失败'})
+      this.setData({loading: false, error: error.message || '读取失败'})
     }
   },
 
-  onName(event) { this.setData({realName: event.detail.value}) },
-  onHospital(event) { this.setData({hospitalId: event.detail.value}) },
-  onTraining(event) { this.setData({training: event.detail.value}) },
-
-  async submit() {
-    if (this.data.submitting) return
-    const realName = (this.data.realName || '').trim()
-    const hospitalId = (this.data.hospitalId || '').trim() || 'demo-hospital'
-    if (realName.length < 2) {
-      wx.showToast({title: '请填写真实姓名', icon: 'none'})
-      return
-    }
-    if (!this.data.training) {
-      wx.showToast({title: '请先勾选培训确认', icon: 'none'})
-      return
-    }
-    this.setData({submitting: true})
-    try {
-      await api.request('/volunteer/apply', 'POST', {
-        hospital_id: hospitalId, real_name: realName, training_confirmed: true
-      })
-      wx.showToast({title: '已提交，等待审核', icon: 'success'})
-      await this.load()
-    } catch (error) {
-      wx.showToast({title: error.message || '提交失败', icon: 'none'})
-    } finally {
-      this.setData({submitting: false})
-    }
-  },
-
+  open(e) { wx.navigateTo({url: e.currentTarget.dataset.url}) },
   openWorkbench() { wx.navigateTo({url: '/pages/navigation-workbench/index'}) },
+  openLegalHelp() { wx.navigateTo({url: '/pages/legal-help/index'}) },
   openLogin() { wx.switchTab({url: '/pages/profile/index'}) }
 })

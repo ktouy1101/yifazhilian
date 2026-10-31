@@ -1,0 +1,43 @@
+<app-header title="真人法律志愿者" back="{{true}}" fallback="/pages/chat/index?domain=legal" />
+<view class="page help-page">
+  <view wx:if="{{loading}}" class="card">正在读取…</view>
+
+  <view wx:elif="{{mode === 'guest'}}" class="card">
+    <view class="help-title">先登录再提问</view>
+    <view class="help-hint">登录后，问题会交给已核验的法律志愿者接单回复。</view>
+    <button class="primary" bindtap="openLogin">去登录</button>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{mode === 'patient'}}" class="card">
+      <view class="help-title">把问题说出来</view>
+      <view class="help-hint">
+        {{available ? '现在有已核验的志愿者，提交后等待接单。' : '现在没有在线志愿者，提交后会排进队列，有人接单时回复你。'}}
+      </view>
+      <view class="help-hint">只写问题本身，不要填姓名、手机号或病历内容。</view>
+      <textarea class="help-textarea" value="{{text}}" bindinput="onText" maxlength="500"
+                placeholder="例如：医院不给复印病历，我该怎么办" />
+      <button class="primary" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">交给志愿者</button>
+    </view>
+
+    <view wx:else class="card">
+      <view class="help-title">待接的工单</view>
+      <view class="help-hint">接单后在同一窗口回复提问人；工单只包含问题文本。</view>
+    </view>
+
+    <view class="card">
+      <view class="help-title">{{mode === 'volunteer' ? '全部工单' : '我的咨询'}}</view>
+      <view wx:if="{{error}}" class="help-error">{{error}}</view>
+      <view wx:if="{{!loading && !items.length}}" class="help-hint">
+        {{mode === 'volunteer' ? '暂时没有人提问。' : '还没有提问过。'}}
+      </view>
+      <view wx:for="{{items}}" wx:key="id" class="help-row" data-id="{{item.id}}" bindtap="open">
+        <view class="help-row-main">
+          <view class="help-row-title">{{item.topic}}<text class="help-tag">{{item.statusText}}</text></view>
+          <view class="help-row-text">{{item.text}}</view>
+          <view class="help-row-time">{{item.timeText}}</view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

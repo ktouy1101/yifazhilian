@@ -64,7 +64,7 @@ class Database:
             try:
                 connection.execute("PRAGMA journal_mode = WAL")
                 version = connection.execute("PRAGMA user_version").fetchone()[0]
-                if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10):
+                if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12):
                     raise RuntimeError(f"Unsupported database schema version: {version}")
                 connection.executescript(Path(__file__).with_name("schema.sql").read_text(encoding="utf-8"))
                 # Migration v1 -> v2: existing databases add the openid column.
@@ -81,6 +81,10 @@ class Database:
                 # audit rows keep pointing at a real user and orphan rows cannot appear.
                 if not column_exists(connection, "users", "deleted_at"):
                     connection.execute("ALTER TABLE users ADD COLUMN deleted_at TEXT")
+                # Migration v11 -> v12: password login. Existing accounts keep NULL
+                # until a password is set through the API or an admin.
+                if not column_exists(connection, "users", "password_hash"):
+                    connection.execute("ALTER TABLE users ADD COLUMN password_hash TEXT")
                 # Source cards were removed from the chat UI and API; drop the
                 # legacy citation table so old databases do not keep a dead copy.
                 connection.execute("DROP TABLE IF EXISTS message_sources")
@@ -134,7 +138,7 @@ class Database:
                       "住院1层", now)])
                 from app.services.knowledge import seed_knowledge
                 seed_knowledge(connection)
-                connection.execute("PRAGMA user_version = 10")
+                connection.execute("PRAGMA user_version = 12")
                 connection.commit()
                 self._initialized = True
             except BaseException:

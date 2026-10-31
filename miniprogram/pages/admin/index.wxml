@@ -2,35 +2,67 @@
 <view class="admin-page">
   <view class="admin-head">
     <view class="admin-title">审核员 · {{me && me.display_name ? me.display_name : '管理员'}}</view>
-    <view class="admin-sub">待办与审核动作都在服务端校验；本页只展示入口。</view>
+    <view class="admin-sub">所有动作由服务端校验；这里只是入口。</view>
+  </view>
+
+  <view class="stat-row">
+    <view class="stat"><text class="stat-num">{{overview.routes_pending}}</text><text class="stat-label">路线待审</text></view>
+    <view class="stat"><text class="stat-num">{{overview.volunteers_pending}}</text><text class="stat-label">志愿者待审</text></view>
+    <view class="stat"><text class="stat-num">{{overview.feedback_total}}</text><text class="stat-label">反馈</text></view>
+    <view class="stat"><text class="stat-num">{{overview.users_total}}</text><text class="stat-label">用户</text></view>
   </view>
 
   <view class="admin-group">
-    <view class="admin-group-title">志愿者申请 · 待审核 {{volunteers.length}}</view>
-    <view wx:if="{{volunteersError}}" class="admin-row-detail">{{volunteersError}}</view>
-    <view wx:if="{{!volunteers.length && !volunteersError}}" class="admin-row-detail">没有待审核的申请。</view>
-    <view wx:for="{{volunteers}}" wx:key="user_id" class="admin-row admin-row-stack">
-      <view class="admin-row-main">
-        <view class="admin-row-title">{{item.real_name}} · {{item.display_name}}</view>
-        <view class="admin-row-detail">医院 {{item.hospital_id}} · 提交于 {{item.updated_at}}</view>
+    <view class="entry-row" data-url="/pages/admin/routes/index" bindtap="open">
+      <view class="entry-copy">
+        <view class="entry-title">路线审核</view>
+        <view class="entry-detail">{{overview.routes_pending}} 条待审 · {{overview.routes_published}} 条已发布</view>
       </view>
-      <view class="admin-actions">
-        <button class="admin-btn approve" data-id="{{item.user_id}}" data-decision="approve" bindtap="reviewVolunteer">通过</button>
-        <button class="admin-btn reject" data-id="{{item.user_id}}" data-decision="reject" bindtap="reviewVolunteer">拒绝</button>
+      <text class="entry-arrow">›</text>
+    </view>
+    <view class="entry-row" data-url="/pages/admin/volunteers/index" bindtap="open">
+      <view class="entry-copy">
+        <view class="entry-title">志愿者申请</view>
+        <view class="entry-detail">{{overview.volunteers_pending}} 条待审 · 通过后开放采集权限</view>
       </view>
+      <text class="entry-arrow">›</text>
+    </view>
+    <view class="entry-row" data-url="/pages/admin/feedback/index" bindtap="open">
+      <view class="entry-copy">
+        <view class="entry-title">导航反馈</view>
+        <view class="entry-detail">{{overview.feedback_total}} 条反馈</view>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+    <view class="entry-row" data-url="/pages/admin/credentials/index" bindtap="open">
+      <view class="entry-copy">
+        <view class="entry-title">法律凭证</view>
+        <view class="entry-detail">{{overview.credentials_pending}} 份待核验 · 通过后才能接法律工单</view>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+    <view class="entry-row" data-url="/pages/admin/legal-help/index" bindtap="open">
+      <view class="entry-copy">
+        <view class="entry-title">法律工单</view>
+        <view class="entry-detail">{{overview.help_open}} 个进行中</view>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+    <view class="entry-row" data-url="/pages/admin/users/index" bindtap="open">
+      <view class="entry-copy">
+        <view class="entry-title">用户管理</view>
+        <view class="entry-detail">{{overview.users_total}} 个账号 · 角色与停用</view>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+    <view class="entry-row" data-url="/pages/admin/audit/index" bindtap="open">
+      <view class="entry-copy">
+        <view class="entry-title">审计</view>
+        <view class="entry-detail">最近的审核与授权动作</view>
+      </view>
+      <text class="entry-arrow">›</text>
     </view>
   </view>
 
-  <view class="admin-group">
-    <view class="admin-group-title">待办</view>
-    <view wx:for="{{pending}}" wx:key="key" class="admin-row">
-      <view class="admin-row-main">
-        <view class="admin-row-title">{{item.title}}</view>
-        <view class="admin-row-detail">{{item.detail}}</view>
-      </view>
-      <text class="admin-row-stage">{{item.stage}}</text>
-    </view>
-  </view>
-
-  <view class="admin-note">P2 已接入：志愿者申请可通过/拒绝，通过后自动获得采集权限；路线审核与反馈处理在 P3 接入。</view>
+  <view class="admin-note">法律凭证通过后，对方才能接法律工单；工单只传问题文本，不含病历与手机号。</view>
 </view>

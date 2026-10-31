@@ -57,6 +57,17 @@ const evt = data => ({currentTarget: {dataset: data}})
 const sub = () => ({id: 'sub-1', collector_id: 'collector', revision: 2, title: '大厅到检验科',
   status: 'draft', nodes: [{node_key: 'start', kind: 'start', position: 0}, {node_key: 'end', kind: 'end', position: 1}], media: []})
 
+// 工作台不再内置账号切换器：测试里直接走 demo-login 换身份，再重新加载。
+async function switchTo(workbench, identity, origin, id) {
+  const role = id.startsWith('demo-patient') ? 'patient' : 'volunteer'
+  const body = await fetch(origin + '/api/v1/auth/demo-login', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({demo_alias: id, role})
+  }).then(response => response.json())
+  identity.saveSession(body.access_token, body.user)
+  return workbench.reload()
+}
+
 test('JSON, upload and photo download are aborted on identity switch; stale 401 cannot log out new user', async () => {
   const identity = makeIdentity()
   identity.saveSession('old-token', {id: 'old'})
@@ -108,69 +119,6 @@ test('shared API cancels old requests so old 401 cannot clear the new navigation
   await pending
   options.success({statusCode: 401, data: {detail: '旧令牌失效'}})
   assert.equal(identity.getToken(), 'new'); assert.ok(aborted)
-})
-
-test('rapid identity taps cannot race two demo logins while logout clears the page', async () => {
-  const identity = makeIdentity(); identity.saveSession('old', {id: 'old'})
-  let resolveLogin, count = 0
-  const page = makePage('navigation-workbench', {identity, nav: {}, api: {
-    logout: async () => identity.clearSession(),
-    login: async () => { count++; await new Promise(resolve => { resolveLogin = resolve }) }
-  }})
-  page.onLoad(); page.reload = async () => {}
-  const first = page.switchDemo(evt({id: 'demo-volunteer-001'}))
-  await tick()
-  await page.switchDemo(evt({id: 'demo-reviewer-001'}))
-  assert.equal(count, 1)
-  resolveLogin(); await first
-  page.onUnload()
-})
-
-test('account choice does not log in until confirmed; patient enters navigation directly', async () => {
-  const identity = makeIdentity(), logins = [], urls = []
-  const nav = {me: async () => ({user: identity.getUser(), permissions: {browse: true, collect: false, review: false}}),
-    routes: async () => ({items: [{id: 'published'}]})}
-  const api = {logout: async () => identity.clearSession(), login: async (id, role) => {
-    logins.push([id, role]); identity.saveSession('t', {id})
-  }}
-  const page = makePage('navigation-workbench', {identity, nav, api, wx: {switchTab: o => urls.push(o.url)}})
-  page.onLoad(); await page.onShow()
-  assert.equal(page.data.selectedAccountId, 'm11-test-patient')
-  page.selectAccount({detail: {value: 'm11-test-reviewer'}})
-  assert.equal(logins.length, 0); assert.equal(page.data.selectedAction, '进入审核工作台')
-  page.selectAccount({detail: {value: 'm11-test-patient'}})
-  await page.enterSelectedAccount()
-  assert.deepEqual(logins, [['m11-test-patient', 'patient']])
-  assert.equal(urls[0], '/pages/navigation/index'); assert.equal(page.data.pickerOpen, false)
-  page.openAccountPicker(); assert.equal(page.data.pickerOpen, true)
-  page.cancelSwitch(); assert.equal(page.data.pickerOpen, false); assert.equal(logins.length, 1)
-  page.onUnload()
-})
-
-test('failed test login stays in the selector and can be retried without navigating', async () => {
-  const identity = makeIdentity(), urls = []
-  const page = makePage('navigation-workbench', {identity, nav: {}, api: {
-    logout: async () => identity.clearSession(), login: async () => { throw new Error('连接失败') }
-  }, wx: {switchTab: o => urls.push(o.url)}})
-  page.onLoad(); await page.enterSelectedAccount()
-  assert.equal(page.data.pickerOpen, true); assert.equal(page.data.switching, false)
-  assert.equal(page.data.busy, false); assert.match(page.data.error, /连接失败/); assert.equal(urls.length, 0)
-  page.onUnload()
-})
-
-test('reviewer selection enters own workbench and legacy account selection remains visible when switching', async () => {
-  const identity = makeIdentity(), urls = []
-  const nav = {me: async () => ({user: identity.getUser(), permissions: {browse: true, review: true, collect: false}}),
-    routes: async () => ({items: []}), listSubmissions: async () => ({items: [{id: 'pending'}]})}
-  const page = makePage('navigation-workbench', {identity, nav, api: {
-    logout: async () => identity.clearSession(), login: async id => identity.saveSession('t', {id})
-  }, wx: {switchTab: o => urls.push(o.url)}})
-  page.onLoad(); page.selectAccount({detail: {value: 'm11-test-reviewer'}}); await page.enterSelectedAccount()
-  assert.equal(page.data.roleLabel, '审核员'); assert.equal(page.data.pickerOpen, false)
-  assert.equal(page.data.queue[0].id, 'pending'); assert.equal(urls.length, 0)
-  identity.saveSession('legacy', {id: 'demo-reviewer-001'}); await page.reload(); page.openAccountPicker()
-  assert.equal(page.data.selectedAccountId, 'demo-reviewer-001'); assert.equal(page.data.legacyExpanded, true)
-  page.onUnload()
 })
 
 test('dual role workbench keeps own drafts and independent review queue separate', async () => {
@@ -457,7 +405,7 @@ test('native page handlers run claim → photo upload → submit → independent
     const landing = makePage('navigation', env); pages.push(landing); landing.onLoad()
     const workbench = makePage('navigation-workbench', env); pages.push(workbench)
     workbench.onLoad()
-    await workbench.switchDemo(evt({id: 'demo-volunteer-001'}))
+    await switchTo(workbench, identity, origin, 'demo-volunteer-001')
     assert.equal(workbench.data.perms.collect, true, workbench.data.error)
     await landing.onShow()
     assert.equal(landing.data.state, 'ready'); assert.equal(landing.data.routes.length, 0)
@@ -483,7 +431,7 @@ test('native page handlers run claim → photo upload → submit → independent
       method: 'POST', headers: {Authorization: 'Bearer ' + identity.getToken(), 'Content-Type': 'application/json'},
       body: JSON.stringify({revision: capture.data.sub.revision, decision: 'approve', note: '试图自审', walkthrough_confirmed: true})})
     assert.equal(own.status, 403)
-    await workbench.switchDemo(evt({id: 'demo-reviewer-001'}))
+    await switchTo(workbench, identity, origin, 'demo-reviewer-001')
     assert.equal(workbench.data.queue[0].id, sid)
     const review = makePage('route-review', env); pages.push(review)
     review.onLoad({id: sid}); await review.onShow()
@@ -491,7 +439,7 @@ test('native page handlers run claim → photo upload → submit → independent
     review.onNote({detail: {value: '合成场景独立实走；全程同层，无台阶。'}})
     review.toggleWalkthrough(); await review.approve()
     assert.equal(review.data.sub.status, 'published', review.data.error)
-    await workbench.switchDemo(evt({id: 'demo-patient-001'}))
+    await switchTo(workbench, identity, origin, 'demo-patient-001')
     await landing.onShow()
     assert.equal(landing.data.filtered[0].id, sid, landing.data.error)
     assert.equal(landing.data.filtered[0].start.description, '大厅服务台')
@@ -511,18 +459,18 @@ test('native page handlers run claim → photo upload → submit → independent
     assert.ok(walk.data.node.tempPath)
     await walk.checkStatus(); assert.equal(walk.data.current, 0)
     await walk.next(); assert.equal(walk.data.current, 1)
-    await workbench.switchDemo(evt({id: 'demo-reviewer-001'}))
+    await switchTo(workbench, identity, origin, 'demo-reviewer-001')
     await review.load()
     assert.equal(review.data.sub.feedback.length, 1)
     review.onDisableReason({detail: {value: '合成封路反馈，停用'}}); await review.disable()
     assert.equal(review.data.sub.status, 'disabled', review.data.error)
-    await workbench.switchDemo(evt({id: 'demo-patient-001'}))
+    await switchTo(workbench, identity, origin, 'demo-patient-001')
     assert.equal(workbench.data.routes.length, 0)
     await landing.onShow()
     assert.equal(landing.data.state, 'ready'); assert.equal(landing.data.routes.length, 0)
     await walk.retry()
     assert.equal(walk.data.node, null); assert.match(walk.data.error, /停用/)
-    await workbench.switchDemo(evt({id: 'demo-volunteer-001'}))
+    await switchTo(workbench, identity, origin, 'demo-volunteer-001')
     await capture.load()
     assert.equal(capture.data.canRevise, true)
     await capture.revise()
@@ -531,7 +479,7 @@ test('native page handlers run claim → photo upload → submit → independent
     assert.equal((await nav.routes()).items.length, 0)
     capture.togglePrivacy(); await capture.submit()
     assert.equal(capture.data.sub.status, 'submitted', capture.data.error)
-    await workbench.switchDemo(evt({id: 'demo-reviewer-001'}))
+    await switchTo(workbench, identity, origin, 'demo-reviewer-001')
     await review.load()
     review.onNote({detail: {value: '合成路线重新核验，确认恢复通行。'}})
     review.toggleWalkthrough(); await review.approve()

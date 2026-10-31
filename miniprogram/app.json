@@ -1,13 +1,70 @@
 {
-  "pages": ["pages/home/index", "pages/chat/index", "pages/navigation/index", "pages/legal/index", "pages/profile/index", "pages/login/index", "pages/admin/index", "pages/volunteer/index", "pages/navigation-workbench/index", "pages/route-capture/index", "pages/route-review/index", "pages/photo-walkthrough/index", "pages/records/index", "pages/record-review/index"],
-  "window": {"navigationStyle":"custom", "navigationBarTitleText": "医法智联", "navigationBarBackgroundColor": "#E2F2F3", "navigationBarTextStyle": "black", "backgroundColor": "#F3F8F9"},
+  "pages": [
+    "pages/home/index",
+    "pages/chat/index",
+    "pages/navigation/index",
+    "pages/legal/index",
+    "pages/profile/index",
+    "pages/login/index",
+    "pages/admin/index",
+    "pages/admin/routes/index",
+    "pages/admin/volunteers/index",
+    "pages/admin/feedback/index",
+    "pages/admin/users/index",
+    "pages/admin/audit/index",
+    "pages/volunteer/index",
+    "pages/navigation-workbench/index",
+    "pages/route-capture/index",
+    "pages/route-review/index",
+    "pages/photo-walkthrough/index",
+    "pages/records/index",
+    "pages/record-review/index",
+    "pages/legal-help/index",
+    "pages/legal-help/detail/index",
+    "pages/admin/credentials/index",
+    "pages/admin/legal-help/index",
+    "pages/volunteer/application/index",
+    "pages/volunteer/legal/index",
+    "pages/volunteer/workbench/index",
+    "pages/admin/workbench/index"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "navigationBarTitleText": "医法智联",
+    "navigationBarBackgroundColor": "#E2F2F3",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F3F8F9"
+  },
   "tabBar": {
-    "color": "#8AA0A6", "selectedColor": "#0E7C86", "backgroundColor":"#ffffff", "borderStyle":"white",
+    "color": "#8AA0A6",
+    "selectedColor": "#0E7C86",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
     "list": [
-      {"pagePath": "pages/home/index", "text": "健康", "iconPath":"assets/icons/home-muted.png", "selectedIconPath":"assets/icons/home-teal.png"},
-      {"pagePath": "pages/navigation/index", "text": "导诊", "iconPath":"assets/icons/pin-muted.png", "selectedIconPath":"assets/icons/pin-teal.png"},
-      {"pagePath": "pages/legal/index", "text": "法知", "iconPath":"assets/icons/scales-muted.png", "selectedIconPath":"assets/icons/scales-teal.png"},
-      {"pagePath": "pages/profile/index", "text": "我的", "iconPath":"assets/icons/user-muted.png", "selectedIconPath":"assets/icons/user-teal.png"}
+      {
+        "pagePath": "pages/home/index",
+        "text": "健康",
+        "iconPath": "assets/icons/home-muted.png",
+        "selectedIconPath": "assets/icons/home-teal.png"
+      },
+      {
+        "pagePath": "pages/navigation/index",
+        "text": "导诊",
+        "iconPath": "assets/icons/pin-muted.png",
+        "selectedIconPath": "assets/icons/pin-teal.png"
+      },
+      {
+        "pagePath": "pages/legal/index",
+        "text": "法知",
+        "iconPath": "assets/icons/scales-muted.png",
+        "selectedIconPath": "assets/icons/scales-teal.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "assets/icons/user-muted.png",
+        "selectedIconPath": "assets/icons/user-teal.png"
+      }
     ]
   },
   "style": "v2",

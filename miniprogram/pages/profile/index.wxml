@@ -16,12 +16,6 @@
     <view class="patient-tags"><text>{{elderMode ? '适老模式已开启' : '标准显示模式'}}</text><text bindtap="openProfile">点击编辑资料 ›</text></view>
   </view>
 
-  <button wx:if="{{me && me.capabilities && me.capabilities.is_reviewer}}" class="card profile-entry" bindtap="openAdmin" hover-class="entry-pressed">
-    <view class="entry-icon legal"><image src="/assets/icons/settings-law.png" mode="aspectFit" /></view>
-    <view class="entry-copy"><view class="entry-title">管理台</view><view class="entry-detail">路线审核 · 志愿者审核 · 律师凭证</view></view>
-    <image class="entry-arrow" src="/assets/icons/chevron-muted.png" mode="aspectFit" />
-  </button>
-
   <button class="card profile-entry" bindtap="openHealth" hover-class="entry-pressed">
     <view class="entry-icon medical"><image src="/assets/icons/pulse-teal.png" mode="aspectFit" /></view>
     <view class="entry-copy"><view class="entry-title">健康与病历</view><view class="entry-detail">健康记录 · 用药计划 · 检验单与病历笔记</view></view>
@@ -31,12 +25,6 @@
   <button class="card profile-entry" bindtap="openSettings" hover-class="entry-pressed">
     <view class="entry-icon legal"><image src="/assets/icons/settings-law.png" mode="aspectFit" /></view>
     <view class="entry-copy"><view class="entry-title">设置</view><view class="entry-detail">隐私授权 · 账号</view></view>
-    <image class="entry-arrow" src="/assets/icons/chevron-muted.png" mode="aspectFit" />
-  </button>
-
-  <button wx:if="{{!previewMode && me && !canWorkbench}}" class="card profile-entry" bindtap="openVolunteer" hover-class="entry-pressed">
-    <view class="entry-icon medical"><image src="/assets/icons/pin-teal.png" mode="aspectFit" /></view>
-    <view class="entry-copy"><view class="entry-title">志愿者中心</view><view class="entry-detail">申请成为志愿者 · 审核通过后可采集路线</view></view>
     <image class="entry-arrow" src="/assets/icons/chevron-muted.png" mode="aspectFit" />
   </button>
 
@@ -94,19 +82,6 @@
           </view>
           <button wx:if="{{previewMode}}" class="connect-button" bindtap="connectService" loading="{{connecting}}" disabled="{{connecting}}">手机号登录</button>
           <button wx:else class="disconnect-button" bindtap="logout" disabled="{{authorizationBusy}}">退出登录</button>
-        </view>
-
-        <view wx:if="{{!previewMode && me && me.synthetic}}" class="setting-group">
-          <view class="group-title">切换演示身份<text class="group-caption">当前：{{me.profile.nickname || me.display_name || me.id}}</text></view>
-          <view class="account-row" wx:for="{{accountList}}" wx:key="id" bindtap="switchAccount" data-id="{{item.id}}" data-role="{{item.role}}">
-            <view class="account-copy">
-              <view class="account-name">{{item.label}}</view>
-              <view class="account-role">{{item.role === 'volunteer' ? '志愿者' : '患者'}}</view>
-            </view>
-            <text wx:if="{{me.id === item.id}}" class="account-current">当前</text>
-            <text wx:else class="account-switch">切换</text>
-          </view>
-          <button class="consent-grant full-width" bindtap="reloginWechat" disabled="{{authorizationBusy}}">用其他手机号登录</button>
         </view>
 
         <view class="setting-group">

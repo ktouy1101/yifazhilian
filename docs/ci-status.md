@@ -7,7 +7,7 @@
 | 项目 | 状态 | 说明 |
 |---|---|---|
 | GitHub Actions | **未运行过** | 仓库没有配置 git remote，`.github/workflows/ci.yml` 只会在推送到 GitHub 后触发；本地无法验证 runner 上的行为 |
-| 后端测试（本地） | ✅ 214 passed | `python -m pytest -q` |
+| 后端测试（本地） | ✅ 228 passed | `python -m pytest -q` |
 | 前端测试（本地） | ⚠️ 83/85 passed | `node --test tests/*.test.cjs` |
 
 ## 2. 本机要用的确切命令

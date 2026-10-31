@@ -269,7 +269,7 @@ def test_v6_migration_pauses_legacy_medicine_without_promoting_demo_vitals(tmp_p
         assert row['id'] == 'old' and payload['status'] == 'paused' and payload['times'] == ['08:00']
         assert payload['dose'] == '' and payload['note'] == 'retained'
         assert c.execute('SELECT count(*) FROM health_entries').fetchone()[0] == 0
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 10
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 12
         c.execute("DELETE FROM health_medication_plans WHERE id='old'")
     with Database(path).transaction() as c:
         assert c.execute('SELECT count(*) FROM health_medication_plans').fetchone()[0] == 0

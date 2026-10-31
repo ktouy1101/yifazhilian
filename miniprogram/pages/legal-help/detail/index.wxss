@@ -1,0 +1,6 @@
+@import "../index.wxss";
+
+.msg { margin-top:18rpx; padding:18rpx 20rpx; border-radius:18rpx; background:#F4F8F9; }
+.msg-volunteer { background:#E7F4F1; }
+.msg-role { font-size:20rpx; color:#7A8F95; }
+.msg-text { margin-top:8rpx; font-size:25rpx; line-height:1.65; color:#1F3B42; }

@@ -367,5 +367,5 @@ def test_v5_migration_keeps_existing_records_and_m02_m11_data(tmp_path):
         c.execute("INSERT INTO medical_records(id,user_id,title,created_at) VALUES('old-note','old-user','retained','2026-10-01')")
     with Database(path).transaction() as c:
         assert c.execute("SELECT title FROM medical_records").fetchone()[0] == "retained"
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 10
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 12
         assert c.execute("SELECT count(*) FROM record_documents").fetchone()[0] == 0

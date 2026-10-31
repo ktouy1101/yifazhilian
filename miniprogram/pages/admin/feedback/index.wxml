@@ -1,0 +1,20 @@
+<app-header title="导航反馈" back="{{true}}" fallback="/pages/admin/index" />
+<view class="admin-page">
+  <view class="admin-head">
+    <view class="admin-sub">患者或志愿者对路线提的问题；目前只读，处理流程在后续迭代接入。</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="admin-group"><view class="empty">正在读取…</view></view>
+  <view wx:elif="{{error}}" class="admin-group"><view class="empty">{{error}}</view></view>
+  <view wx:elif="{{!items.length}}" class="admin-group"><view class="empty">暂时没有反馈。</view></view>
+
+  <view wx:else class="admin-group">
+    <view wx:for="{{items}}" wx:key="id" class="admin-row admin-row-stack">
+      <view class="admin-row-main">
+        <view class="admin-row-title">{{item.categoryText}}<text class="admin-tag">{{item.route_title}}</text></view>
+        <view class="admin-row-detail">{{item.note}}</view>
+        <view class="admin-row-detail">{{item.timeText}}</view>
+      </view>
+    </view>
+  </view>
+</view>

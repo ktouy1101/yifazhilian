@@ -1,0 +1,8 @@
+<view class="shell-nav">
+  <view wx:for="{{items}}" wx:key="key" class="nav-item {{active === item.key ? 'on' : ''}}"
+        data-key="{{item.key}}" bindtap="pick" hover-class="nav-pressed">
+    <text class="nav-icon">{{item.icon}}</text>
+    <text class="nav-label">{{item.label}}</text>
+    <text wx:if="{{item.badge}}" class="nav-badge">{{item.badge}}</text>
+  </view>
+</view>

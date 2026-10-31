@@ -1,0 +1,20 @@
+<app-header title="法律工单" back="{{true}}" fallback="/pages/admin/index" />
+<view class="admin-page">
+  <view class="admin-head">
+    <view class="admin-sub">全部工单与状态；工单只存问题文本，不含病历、姓名或手机号。</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="admin-group"><view class="empty">正在读取…</view></view>
+  <view wx:elif="{{error}}" class="admin-group"><view class="empty">{{error}}</view></view>
+  <view wx:elif="{{!items.length}}" class="admin-group"><view class="empty">还没有工单。</view></view>
+
+  <view wx:else class="admin-group">
+    <view wx:for="{{items}}" wx:key="id" class="admin-row" data-id="{{item.id}}" bindtap="open">
+      <view class="admin-row-main">
+        <view class="admin-row-title">{{item.topic}}<text class="admin-tag">{{item.statusText}}</text></view>
+        <view class="admin-row-detail">{{item.text}}</view>
+        <view class="admin-row-detail">{{item.message_count}} 条回复 · 更新于 {{item.timeText}}</view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -6,3 +6,8 @@
 .back-icon{width:32rpx;height:32rpx;flex-shrink:0}
 .bar button.back-pressed{background:#D8ECEE}
 .bar-back .title{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:30rpx}
+
+/* 未登录时右侧统一的登录入口 */
+.bar button.login-entry{margin:0 0 0 auto;flex-shrink:0;min-width:96rpx;height:56rpx;line-height:56rpx;padding:0 24rpx;border:2rpx solid #B7D7D6;border-radius:28rpx;background:#FFFFFF;color:#0A5A61;font-size:24rpx;font-weight:500}
+.bar button.login-entry::after{border:0}
+.bar button.login-pressed{background:#D8ECEE}

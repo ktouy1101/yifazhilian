@@ -137,7 +137,7 @@ CREATE TABLE legal_help_messages (
 - 管理台新增「志愿者申请 · 待审核」列表，可直接通过/拒绝。
 - 测试：`backend/tests/test_volunteer.py` 5 项；全量 214 项通过。
 
-### P3 审核台（约 1.5 天）
+### P3 审核台（已完成 2026-10-24，约 1.5 天）
 
 - 新增 `pages/admin/index` 待办中心：路线待审、志愿者申请、法律凭证、导航反馈、举报。
 - 路线审核复用现有 review 接口与 `route-review` 页。
@@ -146,11 +146,29 @@ CREATE TABLE legal_help_messages (
 
 **验收**：审核员能在待办中心完成"审路线→发布""审志愿者→放行""看审计"三条闭环；任何一个动作都能在同一页面看到结果。
 
-### P4 法律帮扶（约 1.5 天）
+**实际交付（2026-10-24）**：
+
+- 新增 `app/api/admin.py`：`GET /admin/overview`（路线待审/已发布/志愿者待审/反馈/用户）、`GET /admin/feedback`、`GET /admin/audit`、`POST /admin/users/{id}/roles`（授予/撤销 volunteer、reviewer）。
+- 撤销审核员会同时清 `navigation_memberships.can_review`；不能撤销自己的审核员权限（400）。
+- `GET /admin/users` 增加 `roles` 字段，供管理台显示与切换。
+- 管理台页面重做：概览数字、路线待审入口（跳采集工作台）、志愿者审核、反馈列表、用户管理（授予/撤销角色、停用）、审计列表。
+- 测试：`backend/tests/test_admin_console.py` 8 项；全量 228 项通过。
+- 法律凭证审核随 P4 一起做，管理台已预留位置。
+
+### P4 法律帮扶（已完成 2026-10-24）
 
 - 法律志愿者上传执业证 → 审核员看图核验 → approved。
-- 患者端新增入口「找法律志愿者」，提交问题文本；只在有已核验志愿者时开放。
+- 患者端在法知模块内新增「真人法律志愿者」入口：提交问题后进入队列，由已核验志愿者接单；没有在线志愿者时问题也会保留。
 - 志愿者接单 → 异步回复 → 患者收到；审核员可查全部工单与超时未接单。
+
+**实际交付（2026-10-24）**：
+
+- schema v11：`volunteer_credentials`（私有 BLOB 凭证）、`legal_help_requests`、`legal_help_messages`。
+- 凭证：`POST /volunteer/credentials`（限 4MB，PIL 统一转 JPEG 去元数据）、`GET /volunteer/credentials`、`GET /admin/credentials?status=`、`GET /admin/credentials/{id}/image`（仅审核员）、`POST /admin/credentials/{id}/review`。
+- 工单：`POST /legal-help/requests`（无已核验志愿者时 409）、`GET /legal-help/requests`、`GET /legal-help/queue`（仅 `can_help_legal`）、`POST /legal-help/requests/{id}/claim`（不能接自己的）、`POST /legal-help/requests/{id}/messages`、`GET /legal-help/requests/{id}`（本人/接单志愿者/审核员可看）、`GET /admin/legal-help`。
+- 能力位：`can_help_legal` = 志愿者档案 approved + kinds 含 legal + 至少一张凭证 approved。
+- 页面：`pages/legal-help/index`（按角色显示提问或队列）、`pages/legal-help/detail`（往来与回复）、`pages/admin/credentials`（看图/通过/拒绝）、`pages/admin/legal-help`（全部工单）、志愿者中心增加凭证上传、我的页增加「法律帮扶」入口、管理台增加两个入口。
+- 测试：`backend/tests/test_legal_help.py` 4 项（凭证门禁、工单闭环、越权拒绝、非法图片与重复审核）；全量 228 项通过。
 
 **验收**：无凭证账号无法接单；核验通过后可接单回复；工单里不出现病历与手机号；审核员能看到完整往来与状态。
 

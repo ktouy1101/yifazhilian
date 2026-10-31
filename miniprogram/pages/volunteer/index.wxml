@@ -1,43 +1,56 @@
 <app-header title="志愿者中心" back="{{true}}" fallback="/pages/profile/index" />
-<view class="volunteer-page">
-  <view wx:if="{{loading}}" class="tip-card">正在读取申请状态…</view>
+<view class="vol-page">
+  <view wx:if="{{loading}}" class="vol-card">正在读取…</view>
 
-  <view wx:elif="{{status === 'guest'}}" class="tip-card">
-    <view class="tip-title">还没有登录</view>
-    <view class="tip-text">请先在「我的」用手机号登录，再申请成为志愿者。</view>
-    <button class="primary-btn" bindtap="openLogin">去登录</button>
+  <view wx:elif="{{status === 'guest'}}" class="vol-card">
+    <view class="vol-card-title">还没有登录</view>
+    <view class="vol-text">登录后才能申请志愿者、上传凭证和接单。</view>
+    <button class="vol-btn" bindtap="openLogin">去登录</button>
   </view>
 
   <block wx:else>
-    <view class="status-card status-{{status}}">
-      <view class="status-title">
-        {{status === 'approved' ? '已通过审核' : status === 'pending' ? '等待审核' : status === 'rejected' ? '申请未通过' : status === 'suspended' ? '已暂停' : '还不是志愿者'}}
+    <view class="vol-head">
+      <view class="vol-title">
+        志愿者
+        <text class="vol-badge {{status === 'approved' ? '' : status === 'pending' ? 'wait' : status === 'rejected' || status === 'suspended' ? 'bad' : 'wait'}}">
+          {{status === 'approved' ? '已通过' : status === 'pending' ? '审核中' : status === 'rejected' ? '未通过' : status === 'suspended' ? '已暂停' : '未申请'}}
+        </text>
       </view>
-      <view class="status-text">
-        {{status === 'approved' ? '你可以领取任务、采集路线并提交审核。' : status === 'pending' ? '审核员会在核对实名与医院后处理，通过后自动开放采集权限。' : status === 'rejected' ? '可以修改信息后重新提交。' : status === 'suspended' ? '请联系审核员恢复权限。' : '填写信息并确认培训后提交申请。'}}
+      <view class="vol-sub">
+        {{status === 'approved' ? '可以做导诊采集与法律帮扶；两项能力分别由不同审核决定。' : status === 'pending' ? '审核员核对后会开放能力。' : status === 'rejected' ? '可以修改资料重新提交。' : status === 'suspended' ? '请联系审核员恢复。' : '先提交申请，填写真实姓名与培训确认。'}}
       </view>
-      <view wx:if="{{profile && profile.note}}" class="status-note">审核意见：{{profile.note}}</view>
     </view>
 
-    <button wx:if="{{caps.can_collect}}" class="primary-btn" bindtap="openWorkbench">进入采集工作台</button>
+    <view class="vol-card" style="padding: 8rpx 24rpx;">
+      <view class="vol-entry" data-url="/pages/volunteer/application/index" bindtap="open">
+        <view class="vol-entry-copy">
+          <view class="vol-entry-title">志愿者申请</view>
+          <view class="vol-entry-detail">
+            {{status === 'none' ? '还没有提交申请' : status === 'pending' ? '等待审核中' : status === 'approved' ? '已通过 · 查看资料' : '查看状态与审核意见'}}
+          </view>
+        </view>
+        <text class="vol-entry-arrow">›</text>
+      </view>
 
-    <view wx:if="{{status === 'none' || status === 'rejected'}}" class="form-card">
-      <view class="form-title">志愿者申请</view>
-      <view class="field">
-        <text class="field-label">所属医院</text>
-        <input class="field-input" value="{{hospitalId}}" bindinput="onHospital" placeholder="如 demo-hospital" />
+      <view wx:if="{{caps.can_collect}}" class="vol-entry" bindtap="openWorkbench">
+        <view class="vol-entry-copy">
+          <view class="vol-entry-title">导航采集</view>
+          <view class="vol-entry-detail">领取任务、拍照、提交审核</view>
+        </view>
+        <text class="vol-entry-arrow">›</text>
       </view>
-      <view class="field">
-        <text class="field-label">真实姓名（用于核验）</text>
-        <input class="field-input" value="{{realName}}" bindinput="onName" maxlength="16" placeholder="请填写真实姓名" />
+
+      <view class="vol-entry" data-url="/pages/volunteer/legal/index" bindtap="open">
+        <view class="vol-entry-copy">
+          <view class="vol-entry-title">法律帮扶</view>
+          <view class="vol-entry-detail">
+            {{caps.can_help_legal ? '凭证已核验 · 可以接工单' : credentials.length ? '凭证待核验' : '未上传执业证'}}
+          </view>
+        </view>
+        <text class="vol-entry-arrow">›</text>
       </view>
-      <view class="field check-row">
-        <switch checked="{{training}}" bindchange="onTraining" color="#0E7C86" />
-        <text class="check-text">我已了解志愿者只做导诊与流程指引，不诊断、不解释检查结果、不代替医护</text>
-      </view>
-      <button class="primary-btn" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">提交申请</button>
     </view>
 
-    <view wx:if="{{error}}" class="error-text">{{error}}</view>
+    <view wx:if="{{error}}" class="vol-error">{{error}}</view>
   </block>
 </view>

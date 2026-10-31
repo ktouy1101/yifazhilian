@@ -16,9 +16,11 @@ from app.db import (Database, audit, consent_dict, conversation_dict, emergency_
                     new_id, token_hash, user_dict, utcnow, vital_dict)
 from app.schemas import (ConsentInput, ConversationInput, DemoLogin, Domain,
                          EmergencyInput, MedicationCreate, MessageInput,
-                         PhoneLoginInput, ProfileUpdate, RecordCreate,
-                         SendCodeInput, Scope, VitalInput, WechatLoginInput)
+                         PasswordLoginInput, PhoneLoginInput, ProfileUpdate,
+                         RecordCreate, SendCodeInput, Scope, SetPasswordInput,
+                         VitalInput, WechatLoginInput)
 from app.services import legal_agent, medical_agent, roles
+from app.services import passwords
 from app.services.knowledge import citation
 from app.services.knowledge_provider import KnowledgeProviderError, LocalKnowledgeProvider
 from app.services.rag import answer_record_checklist, answer_visit_question, respond, smalltalk
@@ -181,6 +183,37 @@ def phone_login(payload: PhoneLoginInput, database: Database = Depends(get_datab
             "user": user, "notice": "手机号登录"}
 
 
+@router.post("/auth/password-login")
+def password_login(payload: PasswordLoginInput, database: Database = Depends(get_database)):
+    """密码登录。只在账号已设置密码时可用；没设过密码的账号仍走验证码。"""
+    with database.transaction(write=True) as connection:
+        row = connection.execute(
+            "SELECT * FROM users WHERE phone=? AND deleted_at IS NULL", (payload.phone,)).fetchone()
+        # 账号不存在与密码错误返回同一句话，避免泄露号码是否注册。
+        if row is None or not passwords.verify_password(payload.password, row["password_hash"]):
+            raise HTTPException(401, "手机号或密码不正确")
+        user = user_dict(row)
+        roles.grant_admin(connection, user, payload.phone)
+        token = token_urlsafe(32)
+        connection.execute("INSERT INTO sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)",
+                           (token_hash(token), user["id"], utcnow().isoformat(),
+                            (utcnow() + timedelta(seconds=TOKEN_TTL_SECONDS)).isoformat()))
+        audit(connection, user["id"], "password_login", user["id"])
+    return {"access_token": token, "token_type": "bearer", "expires_in": TOKEN_TTL_SECONDS,
+            "user": user, "notice": "密码登录"}
+
+
+@router.post("/auth/password")
+def set_own_password(payload: SetPasswordInput, user=Depends(current_user),
+                     database: Database = Depends(get_database)):
+    """已登录用户设置/修改自己的密码。"""
+    with database.transaction(write=True) as connection:
+        connection.execute("UPDATE users SET password_hash=? WHERE id=?",
+                           (passwords.hash_password(payload.password), user["id"]))
+        audit(connection, user["id"], "password_set", user["id"])
+    return {"ok": True}
+
+
 @router.post("/auth/logout", status_code=204)
 def logout(credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
            database: Database = Depends(get_database)):
@@ -219,6 +252,9 @@ def admin_list_users(user=Depends(require_reviewer), database: Database = Depend
         rows = connection.execute(
             "SELECT id,role,display_name,synthetic,phone,deleted_at FROM users "
             "ORDER BY (deleted_at IS NOT NULL), synthetic DESC, id").fetchall()
+        granted = {}
+        for row in connection.execute("SELECT user_id,role FROM user_roles"):
+            granted.setdefault(row["user_id"], set()).add(row["role"])
         items = []
         for row in rows:
             phone = row["phone"]
@@ -227,6 +263,7 @@ def admin_list_users(user=Depends(require_reviewer), database: Database = Depend
                 "synthetic": bool(row["synthetic"]),
                 "phone": (phone[:3] + "****" + phone[7:]) if phone else None,
                 "deleted": bool(row["deleted_at"]),
+                "roles": sorted(granted.get(row["id"], set())),
             })
     return {"items": items}
 
