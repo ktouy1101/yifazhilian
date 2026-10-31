@@ -31,3 +31,9 @@ backend/pytest-of-*/
 
 # 部署时生成的实际配置（含密钥）
 deploy/env
+
+# 演示用空库：只含表结构与内置演示数据（无真实账号），允许入库。
+# data/ 被整体忽略，所以要先解除目录忽略，再只放行这一个文件。
+!backend/data/
+backend/data/*
+!backend/data/demo.db
