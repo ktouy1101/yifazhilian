@@ -68,6 +68,8 @@ async function switchTo(workbench, identity, origin, id) {
   return workbench.reload()
 }
 
+const imageUploadStub = {enabled: () => false, toDataUrl: async () => ''}
+
 test('JSON, upload and photo download are aborted on identity switch; stale 401 cannot log out new user', async () => {
   const identity = makeIdentity()
   identity.saveSession('old-token', {id: 'old'})
@@ -78,7 +80,7 @@ test('JSON, upload and photo download are aborted on identity switch; stale 401 
     calls.push(call)
     return {abort() { call.aborted = true }}
   }
-  const nav = moduleFrom('services/navigation.js', {'./identity': identity, '../config/index': {baseURL: 'http://local/api/v1'}}, wx)
+  const nav = moduleFrom('services/navigation.js', {'./identity': identity, '../config/index': {baseURL: 'http://local/api/v1'}, './image_upload': imageUploadStub}, wx)
   const pending = [nav.tasks(), nav.uploadMedia('s', {nodeKey: 'start', revision: 1, filePath: 'p'}),
     nav.fetchMediaTempUrl('m')].map(p => assert.rejects(p, /身份已切换/))
   identity.saveSession('new-token', {id: 'new'})
@@ -398,7 +400,7 @@ test('native page handlers run claim → photo upload → submit → independent
       return {abort: () => controller.abort()}
     }
     const identity = makeIdentity()
-    const requires = {'./identity': identity, '../config/index': {baseURL: origin + '/api/v1'}}
+    const requires = {'./identity': identity, '../config/index': {baseURL: origin + '/api/v1'}, './image_upload': imageUploadStub}
     const nav = moduleFrom('services/navigation.js', requires, wx)
     const api = moduleFrom('services/api.js', requires, wx)
     const env = {nav, api, identity, wx}

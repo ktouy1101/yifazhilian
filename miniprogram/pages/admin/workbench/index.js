@@ -1,5 +1,6 @@
 const api = require('../../../services/api')
 const config = require('../../../config/index')
+const {cloudRun} = require('../../../config/index')
 const identity = require('../../../services/identity')
 const {timeText} = require('../../../utils/format')
 
@@ -126,8 +127,17 @@ Page({
     }
   },
 
-  viewCredential(e) {
+  async viewCredential(e) {
     const id = e.currentTarget.dataset.id
+    if (cloudRun.enabled && cloudRun.env) {
+      try {
+        const res = await api.request('/admin/credentials/' + id + '/image-base64')
+        wx.previewImage({urls: [res.data]})
+      } catch (error) {
+        wx.showToast({title: error.message || '读取图片失败', icon: 'none'})
+      }
+      return
+    }
     wx.downloadFile({
       url: config.baseURL + '/admin/credentials/' + id + '/image',
       header: {Authorization: 'Bearer ' + (identity.getToken() || '')},

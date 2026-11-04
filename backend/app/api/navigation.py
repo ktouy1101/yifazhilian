@@ -1,4 +1,6 @@
 """M11: claimed collection, versioned review, independent publication."""
+import base64
+import binascii
 from hashlib import sha256
 from io import BytesIO
 import json
@@ -9,7 +11,7 @@ from fastapi.responses import Response
 from PIL import Image, ImageOps, UnidentifiedImageError
 from app.api.dependencies import current_user, get_database
 from app.db import Database, audit, new_id, utcnow
-from app.schemas import (DisableInput, FeedbackInput, ReviewDecisionInput,
+from app.schemas import (DisableInput, FeedbackInput, MediaBase64Input, ReviewDecisionInput,
                          SubmissionCreate, SubmissionSubmit, SubmissionUpdate, SubmissionRevise)
 
 router = APIRouter(prefix="/navigation", tags=["navigation"])
@@ -224,16 +226,11 @@ def update(sid: str, payload: SubmissionUpdate, user=Depends(current_user), data
         return _serialize(c, _load(c, sid))
 
 
-@router.post("/submissions/{sid}/media", status_code=201)
-async def upload(sid: str, node_key: str = Form(..., max_length=64), revision: int = Form(..., ge=1),
-                 client_upload_id: str = Form(default="", max_length=64), file: UploadFile = File(...),
-                 user=Depends(current_user), database: Database = Depends(get_database)):
-    with database.transaction() as c:
-        _access(c, _load(c, sid), user["id"], edit=True)
-    data = await file.read(MAX_MEDIA_BYTES + 1)
+def _prepare_image(data: bytes, content_type: str | None = None):
+    """校验并规范化图片：去 EXIF、统一编码。返回 (bytes, mime)。"""
     if len(data) > MAX_MEDIA_BYTES:
         raise HTTPException(413, "图片不能超过 5MB")
-    if file.content_type not in ("image/jpeg", "image/png"):
+    if content_type and content_type not in ("image/jpeg", "image/png"):
         raise HTTPException(415, "仅支持 JPEG / PNG")
     try:
         with warnings.catch_warnings():
@@ -251,7 +248,36 @@ async def upload(sid: str, node_key: str = Form(..., max_length=64), revision: i
         raise HTTPException(422, "图片损坏或尺寸过大，请重新选择 JPEG / PNG")
     if len(data) > MAX_MEDIA_BYTES:
         raise HTTPException(413, "处理后的图片超过 5MB，请压缩后重试")
-    mime, digest = ("image/jpeg" if fmt == "JPEG" else "image/png"), sha256(data).hexdigest()
+    return data, ("image/jpeg" if fmt == "JPEG" else "image/png")
+
+
+@router.post("/submissions/{sid}/media-base64", status_code=201)
+def upload_base64(payload: MediaBase64Input, sid: str,
+                  user=Depends(current_user), database: Database = Depends(get_database)):
+    """云托管没有 multipart 上传，走 JSON base64：data 可带 data:image/...;base64, 前缀。"""
+    raw = payload.data.split(",", 1)[-1]
+    try:
+        data = base64.b64decode(raw, validate=True)
+    except (ValueError, binascii.Error):
+        raise HTTPException(422, "图片内容不是合法的 base64") from None
+    data, mime = _prepare_image(data)
+    return _store_media(database, sid, payload.node_key, payload.revision,
+                        payload.client_upload_id, data, mime, user)
+
+
+@router.post("/submissions/{sid}/media", status_code=201)
+async def upload(sid: str, node_key: str = Form(..., max_length=64), revision: int = Form(..., ge=1),
+                 client_upload_id: str = Form(default="", max_length=64), file: UploadFile = File(...),
+                 user=Depends(current_user), database: Database = Depends(get_database)):
+    with database.transaction() as c:
+        _access(c, _load(c, sid), user["id"], edit=True)
+    data = await file.read(MAX_MEDIA_BYTES + 1)
+    data, mime = _prepare_image(data, file.content_type)
+    return _store_media(database, sid, node_key, revision, client_upload_id, data, mime, user)
+
+
+def _store_media(database, sid, node_key, revision, client_upload_id, data, mime, user):
+    digest = sha256(data).hexdigest()
     with database.transaction(write=True) as c:
         row = _load(c, sid)
         _access(c, row, user["id"], edit=True)
@@ -270,6 +296,23 @@ async def upload(sid: str, node_key: str = Form(..., max_length=64), revision: i
         c.execute("UPDATE navigation_submissions SET revision=revision+1,privacy_confirmed=0,updated_at=? WHERE id=?", (utcnow().isoformat(), sid))
         _event(c, row, user["id"], "photo", {"node_key": node_key})
         return {"id": mid, "node_key": node_key, "revision": revision + 1, "submission_revision": revision + 1, "mime": mime, "size": len(data)}
+
+
+def _media_base64(row):
+    mime = row.get("mime") or "image/jpeg"
+    return {"mime": mime, "size": row.get("size", 0),
+            "data": "data:" + mime + ";base64," + base64.b64encode(row["data"]).decode()}
+
+
+@router.get("/media/{mid}/base64")
+def media_base64(mid: str, user=Depends(current_user), database: Database = Depends(get_database)):
+    """云托管里 <image src> 不能直接用受保护 URL，改由接口返回 data URL。"""
+    with database.transaction() as c:
+        row = c.execute("SELECT * FROM navigation_media WHERE id=?", (mid,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "照片不存在")
+        _access(c, _load(c, row["submission_id"]), user["id"], edit=False)
+        return _media_base64(row)
 
 
 @router.get("/media/{mid}")
@@ -391,6 +434,19 @@ def revise(sid: str, payload: SubmissionRevise, user=Depends(current_user), data
         c.execute("UPDATE navigation_tasks SET status='claimed' WHERE id=?", (row["task_id"],))
         _event(c, row, user["id"], "revise", payload.model_dump())
         return _serialize(c, _load(c, sid))
+
+
+@router.get("/submissions/{sid}/versions/{revision}/media/{node_key}/base64")
+def version_media_base64(sid: str, revision: int, node_key: str, user=Depends(current_user),
+                         database: Database = Depends(get_database)):
+    with database.transaction() as c:
+        _access(c, _load(c, sid), user["id"], edit=False)
+        row = c.execute(
+            "SELECT * FROM navigation_version_media WHERE submission_id=? AND revision=? AND node_key=?",
+            (sid, revision, node_key)).fetchone()
+        if row is None:
+            raise HTTPException(404, "照片不存在")
+        return _media_base64(row)
 
 
 @router.get("/submissions/{sid}/versions/{revision}/media/{node_key}")

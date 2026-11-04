@@ -40,7 +40,9 @@ def test_demo_auth_honours_env_file(monkeypatch):
 
 def test_public_health_exposes_nothing_operational():
     """公开接口只说活着和数据在哪；模型/模式/演示开关不能挂在这里。"""
-    payload = health()
+    from types import SimpleNamespace
+    request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database=None)))
+    payload = health(request)
     assert payload == {"status": "ok", "storage": "sqlite_local"}
     for leaked in ("mode", "demo_auth", "ai_provider", "external_network", "legal_retrieval"):
         assert leaked not in payload

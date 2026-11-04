@@ -157,6 +157,15 @@ class CredentialReviewInput(StrictModel):
     note: str = Field(default="", max_length=200)
 
 
+class RecordBase64Input(StrictModel):
+    data: str = Field(min_length=8, max_length=12_000_000)
+
+
+class CredentialBase64Input(StrictModel):
+    kind: Literal["lawyer_license", "legal_aid"]
+    data: str = Field(min_length=8, max_length=12_000_000)
+
+
 class LegalHelpCreate(StrictModel):
     topic: str = Field(min_length=2, max_length=40)
     text: str = Field(min_length=5, max_length=1000)
@@ -164,6 +173,13 @@ class LegalHelpCreate(StrictModel):
 
 class LegalHelpMessageInput(StrictModel):
     text: str = Field(min_length=1, max_length=1000)
+
+
+class MediaBase64Input(StrictModel):
+    node_key: str = Field(min_length=1, max_length=64)
+    revision: int = Field(ge=1)
+    client_upload_id: str = Field(default="", max_length=64)
+    data: str = Field(min_length=8, max_length=8_000_000)
 
 
 class SubmissionRevise(StrictModel):

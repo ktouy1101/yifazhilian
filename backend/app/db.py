@@ -41,11 +41,17 @@ class Database:
     """Lazy connection factory; each transaction closes its thread-local connection."""
 
     def __init__(self, path: str | Path | None = None):
+        self.mysql_url = os.getenv("YIFAZHILIAN_DB_URL", "").strip()
+        if self.mysql_url and not self.mysql_url.startswith("mysql://"):
+            raise RuntimeError("YIFAZHILIAN_DB_URL 只支持 mysql:// 连接串")
         self.path = Path(path).resolve() if path is not None else database_path()
         self._initialized = False
         self._initialization_lock = Lock()
 
-    def _connect(self) -> sqlite3.Connection:
+    def _connect(self):
+        if self.mysql_url:
+            from app import mysql_adapter
+            return mysql_adapter.connect(self.mysql_url)
         connection = sqlite3.connect(self.path, timeout=10, isolation_level=None)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
@@ -54,6 +60,64 @@ class Database:
         return connection
 
     def initialize(self):
+        if self._initialized:
+            return
+        if self.mysql_url:
+            with self._initialization_lock:
+                if self._initialized:
+                    return
+                self._initialize_mysql()
+            return
+        self._initialize_sqlite()
+
+    def _initialize_mysql(self):
+        from app import mysql_adapter
+        mysql_adapter.ensure_database(self.mysql_url)
+        connection = mysql_adapter.connect(self.mysql_url)
+        try:
+            schema = Path(__file__).with_name("schema.sql").read_text(encoding="utf-8")
+            connection.executescript(schema)
+            connection.executemany(
+                "INSERT OR IGNORE INTO schema_meta(k,v) VALUES(?,?)", [("user_version", "12")])
+            connection.commit()
+            self._seed_mysql(connection)
+            connection.commit()
+            self._initialized = True
+        except BaseException:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    def _seed_mysql(self, connection):
+        """演示种子数据；两个数据库共用同一份声明。"""
+        from app.services.knowledge import seed_knowledge
+        now = utcnow().isoformat()
+        connection.executemany(
+            "INSERT OR IGNORE INTO users(id,role,display_name,synthetic) VALUES(?,?,?,1)",
+            [("demo-patient-001", "patient", "合成患者 001"),
+             ("demo-patient-002", "patient", "合成患者 002"),
+             ("demo-volunteer-001", "volunteer", "演示志愿者"),
+             ("demo-reviewer-001", "volunteer", "演示审核员")])
+        connection.executemany(
+            "INSERT OR IGNORE INTO navigation_memberships(user_id,can_collect,can_review) VALUES(?,?,?)",
+            [("demo-patient-001", 0, 0), ("demo-patient-002", 0, 0),
+             ("demo-volunteer-001", 1, 0), ("demo-reviewer-001", 0, 1)])
+        connection.executemany(
+            "INSERT OR IGNORE INTO user_roles(user_id,role,granted_at) VALUES(?,?,?)",
+            [("demo-volunteer-001", "volunteer", now), ("demo-reviewer-001", "reviewer", now)])
+        connection.executemany(
+            """INSERT OR IGNORE INTO navigation_tasks(id,title,description,floor,status,created_at)
+               VALUES(?,?,?,?, 'open', ?)""",
+            [("task-lab-a", "门诊楼一层：大厅→检验科",
+              "从门诊大厅导诊台出发，沿指示牌到检验科入口，记录转弯、地标与电梯/楼梯。",
+              "门诊1层", now),
+             ("task-pharmacy-b", "住院楼一层：心内科病房→西药房",
+              "从心内科护士站出发到住院楼一层西药房，注意无障碍通道与单向门。",
+              "住院1层", now)])
+        seed_knowledge(connection)
+
+    def _initialize_sqlite(self):
         if self._initialized:
             return
         with self._initialization_lock:

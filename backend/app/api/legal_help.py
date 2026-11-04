@@ -3,6 +3,8 @@
 隐私边界：工单只传问题文本，不接收病历、身份标识或手机号；凭证图片存私有
 BLOB，只有本人和审核员能通过鉴权接口读取。
 """
+import base64
+import binascii
 from io import BytesIO
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
@@ -11,7 +13,8 @@ from PIL import Image, UnidentifiedImageError
 
 from app.api.dependencies import current_user, get_database, patient, require_reviewer
 from app.db import Database, audit, new_id, utcnow
-from app.schemas import CredentialReviewInput, LegalHelpCreate, LegalHelpMessageInput
+from app.schemas import (CredentialBase64Input, CredentialReviewInput, LegalHelpCreate,
+                         LegalHelpMessageInput)
 from app.services import roles
 
 router = APIRouter(tags=["legal-help"])
@@ -68,6 +71,38 @@ async def upload_credential(kind: str = Form(...), file: UploadFile = File(...),
     return {"id": cid, "status": "pending"}
 
 
+@router.post("/volunteer/credentials-base64", status_code=201)
+def upload_credential_base64(payload: CredentialBase64Input, user=Depends(current_user),
+                            database: Database = Depends(get_database)):
+    """云托管没有 multipart，凭证图片走 JSON base64。"""
+    if payload.kind not in CREDENTIAL_KINDS:
+        raise HTTPException(422, "凭证类型只能是 lawyer_license 或 legal_aid")
+    raw = payload.data.split(",", 1)[-1]
+    try:
+        data = base64.b64decode(raw, validate=True)
+    except (ValueError, binascii.Error):
+        raise HTTPException(422, "图片内容不是合法的 base64") from None
+    if not data or len(data) > MAX_IMAGE_BYTES:
+        raise HTTPException(413, "图片为空或超过 4MB")
+    try:
+        image = Image.open(BytesIO(data))
+        image = image.convert("RGB")
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG", quality=85)
+    except (UnidentifiedImageError, OSError):
+        raise HTTPException(422, "无法识别的图片格式") from None
+    data = buffer.getvalue()
+    with database.transaction(write=True) as connection:
+        cid = new_id("cred")
+        connection.execute(
+            "INSERT INTO volunteer_credentials(id,user_id,kind,mime,size,data,status,created_at) "
+            "VALUES(?,?,?,?,?,?,'pending',?)",
+            (cid, user["id"], payload.kind, "image/jpeg", len(data), data, utcnow().isoformat()))
+        _ensure_legal_intent(connection, user["id"])
+        audit(connection, user["id"], "volunteer_credential_submitted", cid)
+    return {"id": cid, "status": "pending"}
+
+
 @router.get("/volunteer/credentials")
 def my_credentials(user=Depends(current_user), database: Database = Depends(get_database)):
     with database.transaction() as connection:
@@ -98,6 +133,18 @@ def credential_image(cid: str, user=Depends(require_reviewer),
         raise HTTPException(404, "凭证不存在")
     return Response(content=row["data"], media_type=row["mime"],
                     headers={"Cache-Control": "no-store"})
+
+
+@router.get("/admin/credentials/{cid}/image-base64")
+def credential_image_base64(cid: str, user=Depends(require_reviewer),
+                            database: Database = Depends(get_database)):
+    with database.transaction() as connection:
+        row = connection.execute(
+            "SELECT mime,data FROM volunteer_credentials WHERE id=?", (cid,)).fetchone()
+    if row is None:
+        raise HTTPException(404, "凭证不存在")
+    return {"mime": row["mime"],
+            "data": "data:" + row["mime"] + ";base64," + base64.b64encode(row["data"]).decode()}
 
 
 @router.post("/admin/credentials/{cid}/review")

@@ -1,5 +1,6 @@
 const identity = require('./identity')
-const {baseURL} = require('../config/index')
+const images = require('./image_upload')
+const {baseURL, cloudRun} = require('../config/index')
 const enc = encodeURIComponent
 const temporary = new Set()
 
@@ -11,7 +12,35 @@ function removeTemp(filePath) {
 function clearTemp() { Array.from(temporary).forEach(removeTemp) }
 identity.onChange(clearTemp)
 
+function cloudJson(path, method = 'GET', data) {
+  const token = identity.getToken()
+  const version = identity.getVersion()
+  return new Promise((resolve, reject) => {
+    wx.cloud.callContainer({
+      config: {env: cloudRun.env},
+      path: '/api/v1' + path,
+      method,
+      header: {'X-WX-SERVICE': cloudRun.service, 'content-type': 'application/json',
+               Authorization: 'Bearer ' + token},
+      data,
+      timeout: path.endsWith('/ocr') ? 95000 : 20000,
+      success(res) {
+        if (identity.getVersion() !== version) return reject(new Error('身份已切换'))
+        if (res.statusCode >= 200 && res.statusCode < 300) return resolve(res.data)
+        const error = new Error((res.data && res.data.detail) || '操作未完成，请检查授权与输入后重试')
+        error.status = res.statusCode
+        if (res.statusCode === 401) identity.clearSession()
+        reject(error)
+      },
+      fail() { reject(new Error('云托管服务未连通，请检查网络后重试')) }
+    })
+  })
+}
+
 function transport(kind, path, options = {}) {
+  if (images.enabled() && kind === 'request') {
+    return cloudJson(path, options.method || 'GET', options.data)
+  }
   const token = identity.getToken(), version = identity.getVersion()
   if (!token) return Promise.reject(new Error('请先登录，再上传或查看检验单'))
   return new Promise((resolve, reject) => {
@@ -86,13 +115,31 @@ module.exports = {
   requestId, access, grant, clearTemp, removeTemp, statusLabel, formatTime,
   list: () => json(root), get: id => json(path(id)),
   checklist: scenario => json(root + '/checklist?scenario=' + enc(scenario)),
-  upload: filePath => transport('uploadFile', root, {filePath, name: 'file'}),
+  upload: async filePath => {
+    if (images.enabled()) {
+      const data = await images.toDataUrl(filePath, 80)
+      return cloudJson(root + '/base64', 'POST', {data})
+    }
+    return transport('uploadFile', root, {filePath, name: 'file'})
+  },
   recognize: (id, data) => json(path(id) + '/ocr', 'POST', data),
   save: (id, data) => json(path(id) + '/draft', 'PUT', data),
   confirm: (id, data) => json(path(id) + '/confirm', 'POST', data),
   version: (id, version) => json(path(id) + '/versions/' + version),
   job: (id, job) => json(path(id) + '/jobs/' + enc(job)),
-  image: id => transport('downloadFile', path(id) + '/image'),
-  crop: (id, job, field) => transport('downloadFile', path(id) + '/jobs/' + enc(job) + '/fields/' + enc(field) + '/image'),
+  image: async id => {
+    if (images.enabled()) {
+      const res = await cloudJson(path(id) + '/image-base64')
+      return res.data
+    }
+    return transport('downloadFile', path(id) + '/image')
+  },
+  crop: async (id, job, field) => {
+    if (images.enabled()) {
+      const res = await cloudJson(path(id) + '/jobs/' + enc(job) + '/fields/' + enc(field) + '/image-base64')
+      return res.data
+    }
+    return transport('downloadFile', path(id) + '/jobs/' + enc(job) + '/fields/' + enc(field) + '/image')
+  },
   discard: (id, revision) => json(path(id) + '?revision=' + revision, 'DELETE')
 }

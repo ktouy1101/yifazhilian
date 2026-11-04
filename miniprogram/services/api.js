@@ -1,7 +1,41 @@
-const {baseURL} = require('../config/index')
+const {baseURL, cloudRun} = require('../config/index')
 const identity = require('./identity')
 
-function request(path, method = 'GET', data) {
+const API_PREFIX = '/api/v1'
+
+// 云托管模式：走 wx.cloud.callContainer，不经域名白名单，无需备案域名。
+// 只在 config/index.js 里把 cloudRun.enabled 打开时生效。
+function cloudRequest(path, method, data) {
+  const token = identity.getToken() || ''
+  const messageRequest = /^\/conversations\/[^/]+\/messages$/.test(path)
+  return new Promise((resolve, reject) => {
+    wx.cloud.callContainer({
+      config: {env: cloudRun.env},
+      path: API_PREFIX + path,
+      method,
+      header: {
+        'X-WX-SERVICE': cloudRun.service,
+        'content-type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+      data,
+      timeout: messageRequest ? 45000 : 10000,
+      success(res) {
+        if (res.statusCode >= 200 && res.statusCode < 300) return resolve(res.data)
+        const detail = res.data && res.data.detail
+        const error = new Error(typeof detail === 'string' ? detail : '请求未完成，请检查授权与输入')
+        error.status = res.statusCode
+        if (res.statusCode === 401) identity.clearSession()
+        reject(error)
+      },
+      fail() {
+        reject(new Error('云托管服务未连通；请确认环境 ID、服务名与部署状态'))
+      }
+    })
+  })
+}
+
+function localRequest(path, method = 'GET', data) {
   const messageRequest = /^\/conversations\/[^/]+\/messages$/.test(path)
   const token = identity.getToken() || ''
   const sessionVersion = identity.getVersion ? identity.getVersion() : token
@@ -43,6 +77,12 @@ function request(path, method = 'GET', data) {
       }
     })
   })
+}
+
+function request(path, method = 'GET', data) {
+  return cloudRun && cloudRun.enabled
+    ? cloudRequest(path, method, data)
+    : localRequest(path, method, data)
 }
 
 async function login(alias = 'demo-patient-001', role = 'patient') {

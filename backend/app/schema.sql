@@ -1,5 +1,10 @@
 -- Synthetic-data demo only. No encryption or tamper-evident audit claims.
 BEGIN IMMEDIATE;
+-- 版本记录（SQLite 用 PRAGMA user_version，MySQL 用这张表）
+CREATE TABLE IF NOT EXISTS schema_meta (
+  k VARCHAR(64) PRIMARY KEY,
+  v VARCHAR(255) NOT NULL
+);
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY, role TEXT NOT NULL CHECK(role IN ('patient','volunteer')),
   display_name TEXT NOT NULL, synthetic INTEGER NOT NULL DEFAULT 0 CHECK(synthetic IN (0,1)),

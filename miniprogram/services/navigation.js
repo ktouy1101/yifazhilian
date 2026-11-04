@@ -1,10 +1,41 @@
 const identity = require('./identity')
-const {baseURL} = require('../config/index')
+const images = require('./image_upload')
+const {baseURL, cloudRun} = require('../config/index')
 const enc = encodeURIComponent
+
+// 云托管模式下的 JSON 请求；不依赖 services/api，避免和它循环引用。
+function cloudJson(path, method = 'GET', data) {
+  const token = identity.getToken()
+  const version = identity.getVersion()
+  return new Promise((resolve, reject) => {
+    wx.cloud.callContainer({
+      config: {env: cloudRun.env},
+      path: '/api/v1/navigation' + path,
+      method,
+      header: {'X-WX-SERVICE': cloudRun.service, 'content-type': 'application/json',
+               Authorization: 'Bearer ' + token},
+      data,
+      timeout: 20000,
+      success(res) {
+        if (identity.getVersion() !== version) return reject(new Error('身份已切换'))
+        if (res.statusCode >= 200 && res.statusCode < 300) return resolve(res.data)
+        const error = new Error((res.data && res.data.detail) || '操作失败，请刷新后重试')
+        error.status = res.statusCode
+        if (res.statusCode === 401) identity.clearSession()
+        reject(error)
+      },
+      fail() { reject(new Error('云托管服务未连通')) }
+    })
+  })
+}
 
 // Capture identity before dispatch. Abort in-flight work on logout/switch;
 // old responses (including 401) must never affect the new account.
 function transport(kind, path, options = {}) {
+  // 云托管模式：JSON 请求与图片读取都改走 callContainer（图片用 base64 data URL）。
+  if (images.enabled() && kind === 'request') {
+    return cloudJson(path, options.method || 'GET', options.data)
+  }
   const token = identity.getToken()
   const version = identity.getVersion()
   if (!token) return Promise.reject(new Error('请先登录或选择合成演示身份'))
@@ -59,14 +90,33 @@ const navigation = {
   routes: () => json('/routes'),
   route: id => json('/routes/' + enc(id)),
   feedback: (id, data) => json('/routes/' + enc(id) + '/feedback', 'POST', data),
-  uploadMedia: (id, {nodeKey, revision, filePath, uploadId}) => transport('uploadFile',
-    '/navigation/submissions/' + enc(id) + '/media', {
+  uploadMedia: async (id, {nodeKey, revision, filePath, uploadId}) => {
+    if (images.enabled()) {
+      const data = await images.toDataUrl(filePath)
+      return cloudJson('/submissions/' + enc(id) + '/media-base64', 'POST',
+        {node_key: nodeKey, revision, client_upload_id: uploadId || '', data})
+    }
+    return transport('uploadFile', '/navigation/submissions/' + enc(id) + '/media', {
       filePath, name: 'file',
       formData: {node_key: nodeKey, revision: String(revision), client_upload_id: uploadId || ''}
-    }),
-  fetchMediaTempUrl: id => transport('downloadFile', '/navigation/media/' + enc(id)),
-  fetchVersionPhoto: (id, revision, key) => transport('downloadFile',
-    '/navigation/submissions/' + enc(id) + '/versions/' + revision + '/media/' + enc(key))
+    })
+  },
+  fetchMediaTempUrl: async id => {
+    if (images.enabled()) {
+      const res = await cloudJson('/media/' + enc(id) + '/base64')
+      return res.data
+    }
+    return transport('downloadFile', '/navigation/media/' + enc(id))
+  },
+  fetchVersionPhoto: async (id, revision, key) => {
+    if (images.enabled()) {
+      const res = await cloudJson(
+        '/submissions/' + enc(id) + '/versions/' + revision + '/media/' + enc(key) + '/base64')
+      return res.data
+    }
+    return transport('downloadFile',
+      '/navigation/submissions/' + enc(id) + '/versions/' + revision + '/media/' + enc(key))
+  }
 }
 module.exports = navigation
 

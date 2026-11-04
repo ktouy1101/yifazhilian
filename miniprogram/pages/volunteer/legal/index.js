@@ -1,6 +1,7 @@
 const api = require('../../../services/api')
 const config = require('../../../config/index')
 const identity = require('../../../services/identity')
+const images = require('../../../services/image_upload')
 const {timeText} = require('../../../utils/format')
 
 const KIND = {lawyer_license: '律师执业证', legal_aid: '法律援助工作证'}
@@ -35,7 +36,22 @@ Page({
     })
   },
 
-  pushCredential(filePath) {
+  async pushCredential(filePath) {
+    if (images.enabled()) {
+      // 云托管：无 multipart，压缩后转 base64
+      this.setData({uploading: true})
+      try {
+        const data = await images.toDataUrl(filePath)
+        await api.request('/volunteer/credentials-base64', 'POST', {kind: 'lawyer_license', data})
+        wx.showToast({title: '已提交，等待核验', icon: 'success'})
+        await this.load()
+      } catch (error) {
+        wx.showToast({title: error.message || '上传失败', icon: 'none'})
+      } finally {
+        this.setData({uploading: false})
+      }
+      return
+    }
     this.setData({uploading: true})
     wx.uploadFile({
       url: config.baseURL + '/volunteer/credentials',

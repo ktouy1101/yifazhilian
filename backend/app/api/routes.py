@@ -32,13 +32,15 @@ logger = logging.getLogger("app.api")
 
 
 @router.get("/health")
-def health():
+def health(request: Request):
     """公开探针：只说“活着、数据在哪”。
 
     模型、运行模式、演示登录开关这些部署细节不放在公开接口上——否则等于在门口
     挂牌告诉别人“这里还能用固定验证码登录”。审核员可看 /admin/runtime。
     """
-    return {"status": "ok", "storage": "sqlite_local"}
+    database = getattr(request.app.state, "database", None)
+    storage = "mysql" if getattr(database, "mysql_url", "") else "sqlite_local"
+    return {"status": "ok", "storage": storage}
 
 
 @router.get("/admin/runtime")

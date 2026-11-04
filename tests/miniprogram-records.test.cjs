@@ -256,7 +256,7 @@ test('transport aborts every private channel and deletes late downloaded photos 
     const call = {options, kind}; calls.push(call)
     return {abort() { call.aborted = true }}
   }
-  const records = moduleFrom('services/records.js', {'./identity': identity, '../config/index': {baseURL: 'http://local'}}, wx)
+  const records = moduleFrom('services/records.js', {'./identity': identity, '../config/index': {baseURL: 'http://local'}, './image_upload': {enabled: () => false, toDataUrl: async () => ''}}, wx)
   const promises = [records.list(), records.upload('file'), records.image('id')].map(p => assert.rejects(p, /身份已切换/))
   identity.saveSession('new', {id: 'new'})
   await Promise.all(promises)
@@ -358,7 +358,7 @@ test('native page handlers run actual HTTP upload → CPU OCR → correction →
       })().catch(e => options.fail({errMsg: e.message}))
       return {abort: () => controller.abort()}
     }
-    const records = moduleFrom('services/records.js', {'./identity': identity, '../config/index': {baseURL: api}}, wx)
+    const records = moduleFrom('services/records.js', {'./identity': identity, '../config/index': {baseURL: api}, './image_upload': {enabled: () => false, toDataUrl: async () => ''}}, wx)
     page = makePage('record-review', identity, records, wx)
     page.onLoad({source: 'album'}); await page.onShow()
     assert.equal(page.data.localPath, '')

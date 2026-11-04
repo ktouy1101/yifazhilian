@@ -1,4 +1,6 @@
 """M03 private images, local OCR, explicit review and immutable archive versions."""
+import base64
+import binascii
 from datetime import date, datetime, timedelta
 from hashlib import sha256
 from io import BytesIO
@@ -13,7 +15,7 @@ from pydantic import Field, model_validator
 
 from app.api.dependencies import consent_policy, get_database, patient, require_consent
 from app.db import Database, audit, new_id, token_hash, utcnow
-from app.schemas import StrictModel
+from app.schemas import RecordBase64Input, StrictModel
 from app.services.record_ocr import OCRError, empty_draft, parse_report, upright_png
 from app.services.record_checklist import RECORD_TYPES, build_checklist
 
@@ -108,14 +110,8 @@ def check_not_running(c, row):
               ("识别中断，可重试或手填", utcnow().isoformat(), row["latest_job_id"]))
 
 
-@router.post("", status_code=201)
-def upload_document(request: Request, file: UploadFile = File(...), user=Depends(patient), database: Database = Depends(get_database)):
-    with database.transaction() as c:
-        consent = authorize(c, user)
-    try:
-        data = file.file.read(MAX_BYTES + 1)
-    finally:
-        file.file.close()
+def _validate_record_image(data: bytes):
+    """校验病历照片，返回 (mime, width, height)。"""
     if not data or len(data) > MAX_BYTES:
         raise HTTPException(413, "请选择8MB以内的检验单照片")
     try:
@@ -133,6 +129,13 @@ def upload_document(request: Request, file: UploadFile = File(...), user=Depends
                 width, height = upright.size
     except (ValueError, OSError, UnidentifiedImageError, Image.DecompressionBombError, Image.DecompressionBombWarning):
         raise HTTPException(422, "照片无效；请用清晰的JPEG、PNG或WebP单张照片（40像素以上，2000万像素以内）")
+    return mime, width, height
+
+
+def _store_document(request: Request, user, database, data: bytes):
+    mime, width, height = _validate_record_image(data)
+    with database.transaction() as c:
+        consent = authorize(c, user)
     digest = sha256(data).hexdigest()
     with database.transaction(write=True) as c:
         if authorize(c, user, request) != consent:
@@ -146,6 +149,28 @@ def upload_document(request: Request, file: UploadFile = File(...), user=Depends
                   (did, user["id"], digest, data, mime, width, height, dump(empty_draft()), now, now))
         audit(c, user["id"], "record_image_uploaded", did)
         return serialize(c, load(c, user["id"], did)) | {"duplicate": False}
+
+
+@router.post("", status_code=201)
+def upload_document(request: Request, file: UploadFile = File(...), user=Depends(patient),
+                    database: Database = Depends(get_database)):
+    try:
+        data = file.file.read(MAX_BYTES + 1)
+    finally:
+        file.file.close()
+    return _store_document(request, user, database, data)
+
+
+@router.post("/base64", status_code=201)
+def upload_document_base64(payload: RecordBase64Input, request: Request, user=Depends(patient),
+                           database: Database = Depends(get_database)):
+    """云托管没有 multipart，病历照片走 JSON base64。"""
+    raw = payload.data.split(",", 1)[-1]
+    try:
+        data = base64.b64decode(raw, validate=True)
+    except (ValueError, binascii.Error):
+        raise HTTPException(422, "图片内容不是合法的 base64") from None
+    return _store_document(request, user, database, data)
 
 
 @router.get("")
@@ -163,6 +188,25 @@ def checklist(scenario: str = "outpatient", user=Depends(patient), database: Dat
         rows = c.execute("SELECT draft,status FROM record_documents WHERE user_id=? ORDER BY updated_at DESC",
                          (user["id"],)).fetchall()
         return build_checklist([{"draft": row["draft"], "status": row["status"]} for row in rows], scenario)
+
+
+@router.get("/{document_id}/image-base64")
+def get_image_base64(document_id: str, original: bool = False, user=Depends(patient),
+                     database: Database = Depends(get_database)):
+    with database.transaction() as c:
+        authorize(c, user)
+        row = load(c, user["id"], document_id)
+        data, mime = bytes(row["image"]), row["mime"]
+    payload = data if original else upright_png(data)
+    media = mime if original else "image/png"
+    return {"mime": media, "data": "data:" + media + ";base64," + base64.b64encode(payload).decode()}
+
+
+@router.get("/{document_id}/jobs/{job_id}/fields/{field_id}/image-base64")
+def field_image_base64(document_id: str, job_id: str, field_id: str, user=Depends(patient),
+                       database: Database = Depends(get_database)):
+    return {"mime": "image/png", "data": "data:image/png;base64,"
+            + base64.b64encode(_field_png(document_id, job_id, field_id, user, database)).decode()}
 
 
 @router.get("/{document_id}")
@@ -204,12 +248,29 @@ def field_image(document_id: str, job_id: str, field_id: str, user=Depends(patie
         if not field:
             raise HTTPException(404, "没有对应的原图位置，请查看整张原图")
         data = bytes(row["image"])
+    return Response(_crop_field(data, field), media_type="image/png")
+
+
+def _crop_field(data: bytes, field: dict) -> bytes:
     with Image.open(BytesIO(upright_png(data))) as image:
         x1, y1, x2, y2 = field["box"]
         crop = image.crop((max(0, int(x1) - 12), max(0, int(y1) - 12), min(image.width, int(x2) + 12), min(image.height, int(y2) + 12)))
         output = BytesIO()
         crop.save(output, format="PNG")
-    return Response(output.getvalue(), media_type="image/png")
+    return output.getvalue()
+
+
+def _field_png(document_id: str, job_id: str, field_id: str, user, database) -> bytes:
+    with database.transaction() as c:
+        authorize(c, user)
+        row = load(c, user["id"], document_id)
+        job = c.execute("SELECT result FROM record_ocr_jobs WHERE id=? AND document_id=?", (job_id, document_id)).fetchone()
+        result = json.loads(job["result"]) if job and job["result"] else {}
+        field = next((f for f in result.get("draft", {}).get("fields", []) if f["id"] == field_id), None)
+        if not field:
+            raise HTTPException(404, "没有对应的原图位置，请查看整张原图")
+        data = bytes(row["image"])
+    return Response(_crop_field(data, field), media_type="image/png")
 
 
 @router.post("/{document_id}/ocr")
