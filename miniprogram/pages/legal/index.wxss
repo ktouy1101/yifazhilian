@@ -411,3 +411,10 @@
   50%  {transform:rotate(2.6deg)}
   100% {transform:rotate(-2.6deg)}
 }
+/* 修正：托盘纳入摆动层，幅度加大便于观察 */
+.scales-top{transform-origin:50% 31%; animation:pan-swing 5.2s ease-in-out infinite, emblem-glow 6s ease-in-out infinite}
+@keyframes pan-swing{
+  0%   {transform:rotate(-4deg)}
+  50%  {transform:rotate(4deg)}
+  100% {transform:rotate(-4deg)}
+}
