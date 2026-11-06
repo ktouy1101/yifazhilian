@@ -62,16 +62,19 @@ LONG_TEXT_COLUMNS = (
 def translate_schema(script: str) -> list[str]:
     """把 SQLite DDL 转成 MySQL 8 / MariaDB 兼容的语句列表。
 
-    SQLite 的 TEXT 既能当主键也能存长文本；MySQL 里主键必须限长，
-    所以统一先转 VARCHAR(255)，再把已知的长文本列改回 LONGTEXT。
+    SQLite 的 TEXT 既能当主键也能存长文本；MySQL 里主键必须限长。
+    统一先转 VARCHAR(191)（191×4=764 字节，低于 MySQL 5.7 的 767 上限），
+    再把已知的长文本列改回 LONGTEXT。
     """
     script = re.sub(r"^\s*(BEGIN(\s+IMMEDIATE)?|COMMIT)\s*;\s*$", "",
                     script, flags=re.IGNORECASE | re.MULTILINE)
     script = script.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "BIGINT AUTO_INCREMENT PRIMARY KEY")
     script = re.sub(r"\bBLOB\b", "LONGBLOB", script)
-    script = re.sub(r"\bTEXT\b", "VARCHAR(255)", script)
+    script = re.sub(r"\bTEXT\b", "VARCHAR(191)", script)
     for column in LONG_TEXT_COLUMNS:
-        script = re.sub(rf"\b{column}\s+VARCHAR\(255\)", f"{column} LONGTEXT", script)
+        script = re.sub(rf"\b{column}\s+VARCHAR\(191\)", f"{column} LONGTEXT", script)
+    # MySQL（尤其 5.7）不允许 TEXT/BLOB 列带默认值，转成 LONGTEXT 后要把 DEFAULT 去掉
+    script = re.sub(r"(LONGTEXT[^,\n]*?)\s+DEFAULT\s+''", r"\1", script)
     script = re.sub(r"\bAUTOINCREMENT\b", "AUTO_INCREMENT", script, flags=re.IGNORECASE)
     # 外键在 MySQL 里受列类型/建表顺序约束，业务逻辑本就不依赖级联，
     # 直接去掉，避免 CREATE TABLE 因 FK 不匹配失败。

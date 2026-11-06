@@ -37,3 +37,7 @@ deploy/env
 !backend/data/
 backend/data/*
 !backend/data/demo.db
+
+# 云托管 CLI 生成的部署包
+.cloudrun_*.zip
+dist/

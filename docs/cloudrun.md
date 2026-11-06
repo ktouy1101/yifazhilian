@@ -22,6 +22,32 @@
 
 ---
 
+## 已部署实例（2026-11-06）
+
+| 项 | 值 |
+|---|---|
+| 环境 ID | `prod-d7gck81ghb168ec59`（上海） |
+| 服务名 | `flask-iiym` |
+| 公网域名 | `https://flask-iiym-342764-7-1374267229.sh.run.tcloudbase.com` |
+| 数据库 | 云托管 MySQL（内网 `10.20.103.25:3306`，库 `yifazhilian`，MySQL 5.7） |
+| 健康检查 | `/api/v1/health` → `{"status":"ok","storage":"mysql"}` |
+
+小程序端 `miniprogram/config/index.js` 的 `cloudRun` 已指向该实例。
+
+部署命令（已登录 CLI 后，在仓库根目录）：
+
+```bash
+node "$(npm prefix -g)/node_modules/@wxcloud/cli/bin/run" run:deploy .work/cloudrun-bundle   --envId prod-d7gck81ghb168ec59 --serviceName flask-iiym   --targetDir . --dockerfile Dockerfile --containerPort 80   --remark "deploy" --noConfirm
+```
+
+> 上传目录是精简后的 `.work/cloudrun-bundle`（约 800KB）。直接传仓库根目录会把 57MB 的本地数据库和 `.git` 一起打包，非常慢。
+
+MySQL 5.7 的两个坑（已在 `mysql_adapter.py` 处理）：
+1. `TEXT` 作主键会超 767 字节索引上限 → 统一转 `VARCHAR(191)`
+2. TEXT/BLOB 列不能有默认值 → 转 `LONGTEXT` 后去掉 `DEFAULT ''`
+
+---
+
 ## 一、开通环境
 
 1. 微信公众平台 → 开发管理 → 云服务 → 云托管 → 开通
