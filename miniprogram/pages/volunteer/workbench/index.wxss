@@ -48,3 +48,45 @@
 .wide-btn{width:100%;margin-top:18rpx;border-radius:22rpx;background:linear-gradient(135deg,#0E7C86,#0A5A61);color:#fff;font-size:28rpx;font-weight:600;line-height:92rpx;padding:0}
 .wide-btn::after{border:none}
 .shell-gap{height:150rpx}
+
+/* 工作台玻璃风 + 动效（2026-11-07） */
+@keyframes vw-rise{from{opacity:0;transform:translateY(16rpx)}to{opacity:1;transform:none}}
+
+.hero{
+  background:rgba(255,255,255,.58);
+  -webkit-backdrop-filter:blur(28rpx) saturate(180%); backdrop-filter:blur(28rpx) saturate(180%);
+  border:1rpx solid rgba(255,255,255,.78); border-radius:32rpx;
+  padding:28rpx 28rpx 26rpx; margin-bottom:22rpx;
+  box-shadow:0 20rpx 54rpx -32rpx rgba(16,66,74,.5), inset 0 1rpx 0 rgba(255,255,255,.9);
+  animation:vw-rise .36s cubic-bezier(.22,.61,.36,1) both}
+
+.hero-badge{
+  background:rgba(255,255,255,.7);
+  border:1rpx solid rgba(255,255,255,.85);
+  -webkit-backdrop-filter:blur(12rpx); backdrop-filter:blur(12rpx)}
+
+.quick{
+  background:rgba(255,255,255,.6);
+  -webkit-backdrop-filter:blur(24rpx); backdrop-filter:blur(24rpx);
+  border:1rpx solid rgba(255,255,255,.78); border-radius:30rpx;
+  box-shadow:0 18rpx 48rpx -32rpx rgba(16,66,74,.45);
+  transition:transform .16s ease, box-shadow .2s ease;
+  animation:vw-rise .36s cubic-bezier(.22,.61,.36,1) both}
+.quick:active{transform:scale(.975)}
+
+.row{
+  background:rgba(255,255,255,.62);
+  -webkit-backdrop-filter:blur(22rpx); backdrop-filter:blur(22rpx);
+  border:1rpx solid rgba(255,255,255,.75); border-radius:26rpx;
+  box-shadow:0 14rpx 40rpx -30rpx rgba(16,66,74,.42);
+  animation:vw-rise .34s cubic-bezier(.22,.61,.36,1) both}
+.row:nth-of-type(2){animation-delay:.04s}
+.row:nth-of-type(3){animation-delay:.08s}
+.row:nth-of-type(4){animation-delay:.12s}
+.row:active{transform:scale(.985)}
+
+.alert{
+  background:rgba(252,242,226,.8);
+  border:1rpx solid rgba(255,255,255,.7); border-radius:26rpx;
+  -webkit-backdrop-filter:blur(20rpx); backdrop-filter:blur(20rpx);
+  animation:vw-rise .34s cubic-bezier(.22,.61,.36,1) both}
