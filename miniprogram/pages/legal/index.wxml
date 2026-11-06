@@ -2,20 +2,27 @@
 <view class="page legal-page">
   <view wx:if="{{introVisible}}" class="legal-intro {{introClosing ? 'closing' : ''}}" bindtap="finishIntro" aria-label="法知模块开场动画，轻触进入对话">
     <view class="intro-glow"></view>
+    <view class="intro-rays"></view>
+    <view class="intro-beam"></view>
+    <view class="intro-ring ring-outer"></view>
+    <view class="intro-ring ring-inner"></view>
+    <view class="dust d1"></view><view class="dust d2"></view><view class="dust d3"></view>
+    <view class="dust d4"></view><view class="dust d5"></view><view class="dust d6"></view>
+    <view class="intro-vignette"></view>
     <view class="intro-kicker">患者权益 · 普法陪伴</view>
     <view class="scales-stage">
       <view class="halo halo-one"></view>
       <view class="halo halo-two"></view>
-      <view class="scale-beam"><view class="beam-line"></view><view class="beam-pivot"></view></view>
-      <view class="scale-side side-left"><view class="scale-rope"></view><view class="scale-pan"><text>法</text></view></view>
-      <view class="scale-side side-right"><view class="scale-rope"></view><view class="scale-pan"><text>理</text></view></view>
-      <view class="scale-column"></view>
-      <view class="scale-foot"></view>
+      <view class="pulse p1"></view><view class="pulse p2"></view>
+      <image class="scales-wreath" src="/assets/brand/scales-wreath.png" mode="aspectFit" />
+      <image class="scales-body" src="/assets/brand/scales-body.png" mode="aspectFit" />
+      <image class="scales-top" src="/assets/brand/scales-top.png" mode="aspectFit" />
       <view class="scale-spark spark-one"></view>
       <view class="scale-spark spark-two"></view>
       <view class="scale-spark spark-three"></view>
     </view>
     <view class="intro-title">把问题，放在天平两端</view>
+    <view class="intro-rule"></view>
     <view class="intro-copy">一边是您在意的事，一边是事实和依据。先不急着下结论，我们把它摆清楚。</view>
     <view class="intro-tags"><text>看懂告知</text><text>理清权益</text><text>知道下一步</text></view>
     <button class="intro-start" catchtap="finishIntro">进入对话</button>

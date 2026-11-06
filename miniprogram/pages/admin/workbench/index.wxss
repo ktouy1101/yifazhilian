@@ -56,3 +56,23 @@
 
 .shell-error{font-size:23rpx;color:#A14E45}
 .shell-gap{height:150rpx}
+
+/* 工作台玻璃风 + 动效（2026-11-07） */
+.hero{
+  background:rgba(255,255,255,.58);
+  -webkit-backdrop-filter:blur(28rpx) saturate(180%); backdrop-filter:blur(28rpx) saturate(180%);
+  border:1rpx solid rgba(255,255,255,.78); border-radius:32rpx;
+  padding:26rpx 28rpx; margin-bottom:22rpx;
+  box-shadow:0 20rpx 54rpx -32rpx rgba(16,66,74,.5), inset 0 1rpx 0 rgba(255,255,255,.9)}
+.big-entry{
+  background:rgba(255,255,255,.6);
+  -webkit-backdrop-filter:blur(24rpx); backdrop-filter:blur(24rpx);
+  border:1rpx solid rgba(255,255,255,.78); border-radius:30rpx;
+  box-shadow:0 18rpx 48rpx -32rpx rgba(16,66,74,.45);
+  transition:transform .16s ease, box-shadow .2s ease}
+.big-entry:active{transform:scale(.975)}
+@keyframes wb-rise{from{opacity:0;transform:translateY(16rpx)}to{opacity:1;transform:none}}
+.item,.big-entry,.hero{animation:wb-rise .34s cubic-bezier(.22,.61,.36,1) both}
+.item:nth-of-type(2){animation-delay:.04s}
+.item:nth-of-type(3){animation-delay:.08s}
+.item:nth-of-type(4){animation-delay:.12s}

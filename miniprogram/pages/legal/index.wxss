@@ -150,3 +150,264 @@
 .intro-tags text { animation: rise-in .7s cubic-bezier(.22,.61,.36,1) both }
 .intro-start { animation: rise-in .8s cubic-bezier(.22,.61,.36,1) .78s both }
 .intro-note { animation: rise-in .8s cubic-bezier(.22,.61,.36,1) .92s both }
+
+/* ===== 庄严感增强（2026-11-07）=====
+   金色顶光 + 四角暗角 + 更慢的摆动，营造"审慎、郑重"的情绪。 */
+.intro-rays{
+  position:absolute; top:-10%; left:50%; width:900rpx; height:900rpx; transform:translateX(-50%);
+  background:radial-gradient(circle at 50% 42%, rgba(216,181,106,.16) 0%, rgba(216,181,106,.06) 30%, rgba(11,23,34,0) 62%);
+  animation:glow-breathe 8.5s ease-in-out infinite; pointer-events:none}
+.intro-vignette{
+  position:absolute; top:0; right:0; bottom:0; left:0; pointer-events:none;
+  background:radial-gradient(circle at 50% 44%, rgba(11,23,34,0) 38%, rgba(5,12,19,.42) 78%, rgba(3,8,13,.72) 100%)}
+.intro-kicker{border-color:rgba(216,181,106,.52); letter-spacing:6rpx}
+.intro-title{letter-spacing:.04em; text-shadow:0 6rpx 28rpx rgba(0,0,0,.35)}
+.intro-tags text{border:1rpx solid rgba(216,181,106,.34); background:rgba(216,181,106,.06)}
+.intro-start{box-shadow:0 18rpx 44rpx -20rpx rgba(216,181,106,.75), inset 0 2rpx 0 rgba(255,255,255,.4)}
+.scale-beam{animation-duration:9s}
+.halo-one{animation-duration:40s}
+.halo-two{animation-duration:60s}
+
+/* ===== 神圣感加强（2026-11-07 · 保持 4.5s 节奏）=====
+   光柱 + 同心环 + 金尘 + 分隔线；标题加大字距、降低装饰密度。 */
+.intro-beam{
+  position:absolute; top:-6%; left:50%; width:460rpx; height:66%; transform:translateX(-50%);
+  background:linear-gradient(180deg, rgba(216,181,106,.20) 0%, rgba(216,181,106,.07) 38%, rgba(11,23,34,0) 76%);
+  filter:blur(2rpx); animation:beam-breathe 9s ease-in-out infinite; pointer-events:none}
+@keyframes beam-breathe{ 0%,100%{opacity:.55} 50%{opacity:.95} }
+
+.intro-ring{
+  position:absolute; top:6%; left:50%; border-radius:50%; transform:translateX(-50%);
+  border:1rpx solid rgba(216,181,106,.16); pointer-events:none}
+.ring-outer{width:760rpx; height:760rpx; border-color:rgba(216,181,106,.12); animation:ring-turn 70s linear infinite}
+.ring-inner{width:520rpx; height:520rpx; border-color:rgba(216,181,106,.22); animation:ring-turn-rev 46s linear infinite}
+@keyframes ring-turn{ from{transform:translateX(-50%) rotate(0)} to{transform:translateX(-50%) rotate(360deg)} }
+@keyframes ring-turn-rev{ from{transform:translateX(-50%) rotate(360deg)} to{transform:translateX(-50%) rotate(0)} }
+
+.dust{position:absolute; width:6rpx; height:6rpx; border-radius:50%; background:rgba(226,198,124,.85);
+  box-shadow:0 0 12rpx rgba(226,198,124,.65); animation:dust-float 11s ease-in-out infinite; pointer-events:none}
+.d1{left:22%; top:38%; animation-delay:-1s}
+.d2{left:74%; top:31%; animation-delay:-3.4s}
+.d3{left:34%; top:62%; animation-delay:-5.2s}
+.d4{left:66%; top:58%; animation-delay:-2.1s}
+.d5{left:47%; top:24%; animation-delay:-6.6s}
+.d6{left:58%; top:70%; animation-delay:-8s}
+@keyframes dust-float{
+  0%,100%{opacity:.15; transform:translateY(0) scale(.8)}
+  50%{opacity:.9; transform:translateY(-26rpx) scale(1.15)}
+}
+
+.intro-rule{width:96rpx; height:2rpx; margin:20rpx auto 6rpx;
+  background:linear-gradient(90deg, rgba(216,181,106,0), rgba(216,181,106,.85), rgba(216,181,106,0));
+  animation:rule-bloom 1.1s ease .5s both}
+@keyframes rule-bloom{ from{opacity:0; transform:scaleX(.2)} to{opacity:1; transform:scaleX(1)} }
+
+.intro-title{font-size:52rpx; letter-spacing:.10em; line-height:1.5; font-weight:600}
+.intro-copy{color:rgba(246,242,232,.82); letter-spacing:.02em; line-height:1.9}
+.intro-tags text{border:0; background:transparent; color:rgba(216,181,106,.78); letter-spacing:.14em; font-size:19rpx}
+.intro-kicker{padding:6rpx 26rpx; letter-spacing:.30em; color:rgba(216,181,106,.9)}
+
+/* ===== 天平精修：金线浮雕（2026-11-07）===== */
+.scale-beam{width:330rpx; margin-left:-165rpx; top:74rpx}
+.beam-line{
+  height:5rpx; border-radius:5rpx;
+  background:linear-gradient(90deg, rgba(216,181,106,.15) 0%, #c99a4e 18%, #f7e3b4 50%, #c99a4e 82%, rgba(216,181,106,.15) 100%);
+  box-shadow:0 0 24rpx rgba(240,212,154,.55), 0 1rpx 0 rgba(255,255,255,.35) inset}
+.beam-pivot{
+  width:34rpx; height:34rpx; top:-15rpx; margin-left:-17rpx;
+  border:3rpx solid #f7e3b4; background:radial-gradient(circle at 40% 35%, #6b5836, #1b2d3b 78%);
+  box-shadow:0 0 0 7rpx rgba(216,181,106,.14), 0 0 22rpx rgba(240,212,154,.55)}
+.scale-column{
+  width:10rpx; margin-left:-5rpx; border-radius:10rpx;
+  background:linear-gradient(90deg, rgba(141,107,53,.35), #e6c489 42%, #a97f42 78%, rgba(141,107,53,.3));
+  box-shadow:0 0 18rpx rgba(216,181,106,.35)}
+.scale-rope{
+  width:2rpx;
+  background:linear-gradient(180deg, rgba(247,227,180,.95), rgba(216,181,106,.28));
+  box-shadow:0 0 10rpx rgba(240,212,154,.4)}
+.scale-pan{
+  width:120rpx; height:58rpx; border-width:3rpx; border-top-width:5rpx;
+  border-color:rgba(240,212,154,.9); border-radius:0 0 60rpx 60rpx;
+  background:linear-gradient(180deg, rgba(216,181,106,.20), rgba(216,181,106,.03) 60%, rgba(11,23,34,0));
+  box-shadow:0 0 26rpx rgba(216,181,106,.28), 0 -2rpx 0 rgba(247,227,180,.25) inset}
+.scale-foot{
+  height:10rpx; width:210rpx; margin-left:-105rpx;
+  background:linear-gradient(90deg, rgba(216,181,106,.08), #e0bf85 50%, rgba(216,181,106,.08));
+  box-shadow:0 12rpx 30rpx -10rpx rgba(216,181,106,.65), 0 26rpx 40rpx -22rpx rgba(0,0,0,.6)}
+.scale-foot::after{
+  content:''; position:absolute; left:50%; top:16rpx; width:120rpx; height:2rpx; margin-left:-60rpx;
+  background:linear-gradient(90deg, rgba(216,181,106,0), rgba(216,181,106,.55), rgba(216,181,106,0))}
+.scales-stage{filter:drop-shadow(0 18rpx 40rpx rgba(0,0,0,.45))}
+
+/* ===== 经典正义天平形制（2026-11-07）=====
+   顶部宝珠 → 横梁（两端球帽）→ V 形双链 → 浅碟托盘 → 柱头 → 柱身 → 双层柱础 */
+.scales-stage{width:460rpx; height:360rpx}
+.scale-finial{
+  position:absolute; z-index:5; top:40rpx; left:50%; width:18rpx; height:18rpx; margin-left:-9rpx;
+  transform:rotate(45deg); border-radius:3rpx;
+  background:linear-gradient(135deg,#f7e3b4,#c99a4e);
+  box-shadow:0 0 20rpx rgba(247,227,180,.85), 0 0 40rpx rgba(216,181,106,.35)}
+.scale-finial::after{
+  content:''; position:absolute; left:50%; top:24rpx; width:2rpx; height:16rpx; margin-left:-1rpx;
+  background:linear-gradient(180deg, rgba(247,227,180,.9), rgba(216,181,106,0))}
+
+.scale-beam{top:78rpx; width:340rpx; margin-left:-170rpx}
+.beam-cap{
+  position:absolute; top:-7rpx; width:16rpx; height:16rpx; border-radius:50%;
+  background:radial-gradient(circle at 38% 34%, #fdf0cd, #c99a4e 72%);
+  box-shadow:0 0 16rpx rgba(240,212,154,.7)}
+.cap-left{left:-9rpx} .cap-right{right:-9rpx}
+.beam-pivot{
+  width:30rpx; height:30rpx; top:-13rpx; margin-left:-15rpx; border-width:3rpx;
+  border-color:#f7e3b4; background:radial-gradient(circle at 40% 36%, #7a6338, #16283a 76%)}
+
+.scale-rope{
+  width:2rpx; height:88rpx; transform-origin:top center;
+  background:linear-gradient(180deg, rgba(247,227,180,.95), rgba(216,181,106,.22));
+  box-shadow:0 0 10rpx rgba(240,212,154,.35)}
+.rope-a{left:0; transform:rotate(16deg)} .rope-b{left:0; transform:rotate(-16deg)}
+.side-right .rope-a{transform:rotate(-16deg)} .side-right .rope-b{transform:rotate(16deg)}
+
+.scale-pan{
+  position:relative; width:132rpx; height:52rpx; box-sizing:border-box;
+  border:3rpx solid rgba(240,212,154,.85); border-top-width:4rpx;
+  border-radius:6rpx 6rpx 66rpx 66rpx;
+  background:linear-gradient(180deg, rgba(216,181,106,.26) 0%, rgba(216,181,106,.06) 55%, rgba(11,23,34,0) 100%);
+  box-shadow:0 0 26rpx rgba(216,181,106,.32), inset 0 2rpx 0 rgba(255,255,255,.25)}
+.pan-rim{
+  position:absolute; left:-3rpx; right:-3rpx; top:-7rpx; height:14rpx; border-radius:50%;
+  background:radial-gradient(ellipse at 50% 40%, rgba(247,227,180,.85), rgba(201,154,78,.55) 70%, rgba(201,154,78,0) 100%);
+  opacity:.9}
+
+.scale-capital{
+  position:absolute; z-index:3; top:104rpx; left:50%; width:56rpx; height:10rpx; margin-left:-28rpx;
+  border-radius:6rpx; background:linear-gradient(90deg, rgba(216,181,106,.15), #e6c489 50%, rgba(216,181,106,.15));
+  box-shadow:0 0 18rpx rgba(240,212,154,.45)}
+.scale-column{
+  top:112rpx; height:172rpx; width:12rpx; margin-left:-6rpx; border-radius:0 0 6rpx 6rpx;
+  background:linear-gradient(90deg, rgba(141,107,53,.45), #f0d49a 44%, #a97f42 76%, rgba(141,107,53,.4));
+  box-shadow:0 0 20rpx rgba(216,181,106,.3)}
+.scale-foot{
+  top:282rpx; width:230rpx; margin-left:-115rpx; height:12rpx; border-radius:8rpx;
+  background:linear-gradient(90deg, rgba(216,181,106,.05), #e0bf85 50%, rgba(216,181,106,.05));
+  box-shadow:0 10rpx 26rpx -8rpx rgba(216,181,106,.6)}
+.foot-tier{
+  position:absolute; left:50%; top:18rpx; width:150rpx; height:8rpx; margin-left:-75rpx; border-radius:6rpx;
+  background:linear-gradient(90deg, rgba(216,181,106,.04), rgba(216,181,106,.75) 50%, rgba(216,181,106,.04));
+  box-shadow:0 8rpx 20rpx -10rpx rgba(216,181,106,.55)}
+
+/* ===== 金色徽标：光效与动效（2026-11-07）===== */
+.scales-stage{width:520rpx; height:400rpx; filter:drop-shadow(0 24rpx 48rpx rgba(0,0,0,.45))}
+.scales-emblem{
+  position:relative; z-index:3; width:100%; height:100%;
+  filter:drop-shadow(0 0 22rpx rgba(247,227,180,.55)) drop-shadow(0 0 60rpx rgba(216,181,106,.30));
+  animation:emblem-float 7.5s ease-in-out infinite}
+@keyframes emblem-float{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-9rpx) scale(1.012)}
+}
+@keyframes emblem-glow{
+  0%,100%{filter:drop-shadow(0 0 18rpx rgba(247,227,180,.45)) drop-shadow(0 0 52rpx rgba(216,181,106,.22))}
+  50%{filter:drop-shadow(0 0 30rpx rgba(247,227,180,.75)) drop-shadow(0 0 84rpx rgba(216,181,106,.38))}
+}
+.scales-emblem{animation:emblem-float 7.5s ease-in-out infinite, emblem-glow 6s ease-in-out infinite}
+
+/* 收尾微调（2026-11-07） */
+.intro-title{font-size:50rpx; letter-spacing:.03em; line-height:1.45}
+.scales-stage{width:560rpx; height:430rpx; margin:6rpx 0 4rpx}
+.intro-kicker{margin-bottom:2rpx}
+.intro-copy{max-width:520rpx; margin:10rpx auto 0}
+.intro-tags{margin-top:16rpx}
+
+/* 周边动效加强（2026-11-07） */
+.halo-one{border-color:rgba(216,181,106,.34); box-shadow:0 0 34rpx rgba(216,181,106,.22); animation-duration:24s}
+.halo-two{border-color:rgba(240,212,154,.48); box-shadow:0 0 26rpx rgba(240,212,154,.20); animation-duration:16s}
+.pulse{
+  position:absolute; z-index:1; left:50%; top:54%; width:280rpx; height:280rpx; margin:-140rpx 0 0 -140rpx;
+  border-radius:50%; border:2rpx solid rgba(240,212,154,.55); animation:pulse-out 3.4s ease-out infinite}
+.pulse.p2{animation-delay:1.7s}
+@keyframes pulse-out{
+  0%{opacity:.85; transform:scale(.55)}
+  100%{opacity:0; transform:scale(1.55)}
+}
+.dust{width:8rpx; height:8rpx; box-shadow:0 0 16rpx rgba(247,227,180,.9)}
+@keyframes dust-float{
+  0%,100%{opacity:.12; transform:translateY(6rpx) scale(.7)}
+  50%{opacity:1; transform:translateY(-34rpx) scale(1.25)}
+}
+
+/* 麦穗放大 + 天平本体分层（2026-11-07） */
+.scales-stage{width:600rpx; height:470rpx}
+.scales-wreath{
+  position:absolute; left:50%; top:50%; width:600rpx; height:600rpx; margin:-300rpx 0 0 -300rpx;
+  z-index:2; animation:wreath-turn 46s linear infinite, wreath-glow 5.4s ease-in-out infinite}
+.scales-core{
+  position:absolute; left:50%; top:50%; width:340rpx; height:340rpx; margin:-170rpx 0 0 -170rpx;
+  z-index:3; animation:emblem-float 7.5s ease-in-out infinite, emblem-glow 6s ease-in-out infinite}
+@keyframes wreath-turn{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@keyframes wreath-glow{
+  0%,100%{filter:drop-shadow(0 0 20rpx rgba(216,181,106,.35))}
+  50%{filter:drop-shadow(0 0 44rpx rgba(240,212,154,.70))}
+}
+
+/* 麦穗放大到出画：只留弧线在画面里（2026-11-07） */
+.scales-stage{width:620rpx; height:470rpx; overflow:hidden; border-radius:24rpx}
+.scales-wreath{
+  width:1080rpx; height:1080rpx; margin:-540rpx 0 0 -540rpx;
+  opacity:.95; animation:wreath-turn 60s linear infinite, wreath-glow 5.4s ease-in-out infinite}
+.scales-core{width:330rpx; height:330rpx; margin:-165rpx 0 0 -165rpx}
+
+/* 去掉中间矩形裁切，麦穗改为延伸到整屏（2026-11-07） */
+.scales-stage{width:620rpx; height:520rpx; overflow:visible; border-radius:0}
+.scales-wreath{width:1320rpx; height:1320rpx; margin:-660rpx 0 0 -660rpx; opacity:.9}
+.scales-core{width:430rpx; height:430rpx; margin:-215rpx 0 0 -215rpx}
+
+/* 麦穗不与文字打架（2026-11-07） */
+.scales-stage{height:440rpx}
+.scales-wreath{width:1080rpx; height:1080rpx; margin:-540rpx 0 0 -540rpx; top:46%; opacity:.42; z-index:1}
+.scales-core{z-index:2}
+.intro-title,.intro-copy,.intro-tags,.intro-start,.intro-note,.intro-kicker{position:relative; z-index:4}
+
+/* 麦穗改为马蹄形 + 天平上下浮动放大（2026-11-07） */
+.scales-wreath{
+  width:1180rpx; height:1180rpx; margin:-590rpx 0 0 -590rpx; top:52%;
+  opacity:.62; z-index:1;
+  animation:wreath-breathe 6.5s ease-in-out infinite, wreath-glow 5.4s ease-in-out infinite}
+@keyframes wreath-breathe{
+  0%,100%{transform:translateY(6rpx) scale(1)}
+  50%{transform:translateY(-8rpx) scale(1.02)}
+}
+.scales-core{
+  width:520rpx; height:520rpx; margin:-260rpx 0 0 -260rpx; z-index:2;
+  animation:scales-float 4.2s ease-in-out infinite, emblem-glow 6s ease-in-out infinite}
+@keyframes scales-float{
+  0%,100%{transform:translateY(10rpx)}
+  50%{transform:translateY(-18rpx)}
+}
+/* 麦穗上移，只托住天平，不压文字 */
+.scales-wreath{width:1000rpx; height:1000rpx; margin:-500rpx 0 0 -500rpx; top:38%; opacity:.5}
+.scales-core{width:500rpx; height:500rpx; margin:-250rpx 0 0 -250rpx}
+
+/* 称量动效：绕轴心微倾（左盘下沉 / 右盘上升），不做整体上下浮动 */
+.scales-core{
+  transform-origin:50% 21%;
+  animation:beam-tilt 5.2s ease-in-out infinite, emblem-glow 6s ease-in-out infinite}
+@keyframes beam-tilt{
+  0%   {transform:rotate(-2.4deg)}
+  50%  {transform:rotate(2.4deg)}
+  100% {transform:rotate(-2.4deg)}
+}
+
+/* 托盘与主干分离：主干静止，横梁+链条+托盘绕轴心摆动（2026-11-07） */
+.scales-core{animation:none}
+.scales-body,.scales-top{
+  position:absolute; left:50%; top:50%; width:500rpx; height:500rpx; margin:-250rpx 0 0 -250rpx; z-index:2}
+.scales-body{animation:emblem-glow 6s ease-in-out infinite}
+.scales-top{
+  transform-origin:50% 31%;
+  animation:pan-swing 5.2s ease-in-out infinite, emblem-glow 6s ease-in-out infinite}
+@keyframes pan-swing{
+  0%   {transform:rotate(-2.6deg)}
+  50%  {transform:rotate(2.6deg)}
+  100% {transform:rotate(-2.6deg)}
+}

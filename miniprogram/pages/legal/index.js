@@ -34,15 +34,14 @@ Page({
     lawyerSheetTitle: '法律知识学习'
   },
   onLoad() {
+    // 开场不再自动跳转：必须用户点「进入对话」或轻触页面才收起。
     this._introClosing = false
-    this.introTimer = setTimeout(() => this.finishIntro(), 4500)
   },
   onShow() {
     const u = getApp().globalData.user
     if (u && u.display_name) this.setData({patientName: u.display_name})
     if (this.data.introVisible && !this._introClosing) {
       clearTimeout(this.introTimer)
-      this.introTimer = setTimeout(() => this.finishIntro(), 4500)
     }
   },
   onHide() {
