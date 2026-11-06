@@ -11,3 +11,15 @@
 .bar button.login-entry{margin:0 0 0 auto;flex-shrink:0;min-width:96rpx;height:56rpx;line-height:56rpx;padding:0 24rpx;border:2rpx solid #B7D7D6;border-radius:28rpx;background:#FFFFFF;color:#0A5A61;font-size:24rpx;font-weight:500}
 .bar button.login-entry::after{border:0}
 .bar button.login-pressed{background:#D8ECEE}
+
+/* 玻璃顶栏（2026-11-07） */
+.header{
+  background:rgba(255,255,255,.66);
+  -webkit-backdrop-filter:blur(28rpx) saturate(180%);
+  backdrop-filter:blur(28rpx) saturate(180%);
+  border-bottom:1rpx solid rgba(255,255,255,.7);
+  box-shadow:0 10rpx 30rpx -26rpx rgba(16,66,74,.5)}
+
+/* 品牌标识：企鹅徽标（2026-11-07） */
+.logo.logo-brand{background:transparent;box-shadow:0 10rpx 24rpx -14rpx rgba(14,124,134,.6)}
+.logo-brand-image{width:60rpx;height:60rpx;border-radius:18rpx}

@@ -7,9 +7,9 @@
       <view class="brand-sub">先登录，再提交申请；通过后可做导诊采集或法律帮扶</view>
     </block>
     <block wx:else>
-      <view class="brand-logo">医</view>
-      <view class="brand-name">医法智联</view>
-      <view class="brand-sub">健康与法律知识科普 · 学生项目</view>
+      <image class="brand-mark" src="/assets/brand/logo-penguin.png" mode="aspectFit" />
+      <view class="brand-name">小企鹅医法智联</view>
+      <view class="brand-sub">健康与法律知识科普</view>
     </block>
   </view>
 

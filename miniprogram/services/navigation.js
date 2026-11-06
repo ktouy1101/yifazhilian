@@ -5,9 +5,24 @@ const enc = encodeURIComponent
 
 // 云托管模式下的 JSON 请求；不依赖 services/api，避免和它循环引用。
 function cloudJson(path, method = 'GET', data) {
+  if (!(wx.cloud && typeof wx.cloud.callContainer === 'function')) {
+    return Promise.reject(new Error('当前基础库不支持云托管调用'))
+  }
   const token = identity.getToken()
   const version = identity.getVersion()
+  let settled = false
   return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      if (settled) return
+      settled = true
+      reject(new Error('云托管请求超时（6 秒）'))
+    }, 6000)
+    const finish = (error, value) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      error ? reject(error) : resolve(value)
+    }
     wx.cloud.callContainer({
       config: {env: cloudRun.env},
       path: '/api/v1/navigation' + path,
@@ -18,13 +33,13 @@ function cloudJson(path, method = 'GET', data) {
       timeout: 20000,
       success(res) {
         if (identity.getVersion() !== version) return reject(new Error('身份已切换'))
-        if (res.statusCode >= 200 && res.statusCode < 300) return resolve(res.data)
+        if (res.statusCode >= 200 && res.statusCode < 300) return finish(null, res.data)
         const error = new Error((res.data && res.data.detail) || '操作失败，请刷新后重试')
         error.status = res.statusCode
         if (res.statusCode === 401) identity.clearSession()
-        reject(error)
+        finish(error)
       },
-      fail() { reject(new Error('云托管服务未连通')) }
+      fail(err) { finish(new Error('云托管服务未连通：' + ((err && err.errMsg) || ''))) }
     })
   })
 }

@@ -76,3 +76,10 @@ def test_allowed_hosts_env_extends_defaults(monkeypatch):
 def test_allowed_hosts_defaults_without_env(monkeypatch):
     monkeypatch.setattr(config, "_read_kv", lambda env_file, environ: {})
     assert config.allowed_hosts() == ["127.0.0.1", "localhost", "testserver", "192.168.199.126"]
+
+
+def test_cloud_runtime_allows_any_host(monkeypatch):
+    """云托管里 callContainer 的 Host 是内部域名，必须放行，否则一律 400。"""
+    assert config.in_cloud_runtime({"K_SERVICE": "flask-iiym"}) is True
+    assert config.allowed_hosts({"K_SERVICE": "flask-iiym"}) == ["*"]
+    assert config.allowed_hosts({}) == ["127.0.0.1", "localhost", "testserver", "192.168.199.126"]

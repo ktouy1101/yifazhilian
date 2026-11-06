@@ -3,10 +3,10 @@ const nav = require('../../../services/navigation')
 const {timeText} = require('../../../utils/format')
 
 const ALL_TABS = {
-  home: {key: 'home', label: '工作台', icon: '⌂'},
-  collect: {key: 'collect', label: '采集', icon: '◉'},
-  legal: {key: 'legal', label: '法律', icon: '§'},
-  mine: {key: 'mine', label: '我的', icon: '☺'}
+  home: {key: 'home', label: '工作台', icon: '/assets/icons/home-muted.png', activeIcon: '/assets/icons/home-teal.png'},
+  collect: {key: 'collect', label: '采集', icon: '/assets/icons/camera-muted.png', activeIcon: '/assets/icons/camera-teal.png'},
+  legal: {key: 'legal', label: '法律', icon: '/assets/icons/scales-muted.png', activeIcon: '/assets/icons/scales-teal.png'},
+  mine: {key: 'mine', label: '我的', icon: '/assets/icons/user-muted.png', activeIcon: '/assets/icons/user-teal.png'}
 }
 const STATUS = {draft: '草稿', submitted: '待审核', changes_requested: '需补拍', published: '已发布', disabled: '已停用'}
 const HELP = {open: '等待接单', claimed: '已接单', answered: '已回复', closed: '已结束'}

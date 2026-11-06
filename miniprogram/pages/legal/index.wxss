@@ -106,3 +106,47 @@
 @keyframes pan-right { 0%,100% { transform: translateY(12rpx); } 50% { transform: translateY(-10rpx); } }
 @keyframes halo-breathe { 0%,100% { opacity: .45; transform: translateX(-50%) scale(.94); } 50% { opacity: 1; transform: translateX(-50%) scale(1.04); } }
 @keyframes spark-twinkle { 0%,100% { opacity: .2; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+/* ===== 法知开场动效升级（2026-11-07）=====
+   华丽但克制：只做视差、呼吸、微摆与扫光，不改变布局。 */
+@keyframes intro-enter { from { opacity:0; transform:scale(.965) } to { opacity:1; transform:scale(1) } }
+@keyframes glow-breathe {
+  0%,100% { opacity:.55; transform:scale(1) }
+  50% { opacity:.9; transform:scale(1.08) }
+}
+@keyframes halo-spin { from { transform:rotate(0) } to { transform:rotate(360deg) } }
+@keyframes halo-spin-rev { from { transform:rotate(360deg) } to { transform:rotate(0) } }
+@keyframes stage-rise { from { opacity:0; transform:translateY(28rpx) scale(.94) } to { opacity:1; transform:none } }
+@keyframes beam-wobble {
+  0%,100% { transform:rotate(-2.2deg) }
+  50% { transform:rotate(2.2deg) }
+}
+@keyframes pan-sway { 0%,100% { transform:translateY(2rpx) } 50% { transform:translateY(-4rpx) } }
+@keyframes spark-twinkle {
+  0%,100% { opacity:.25; transform:scale(.8) }
+  50% { opacity:1; transform:scale(1.25) }
+}
+@keyframes title-in {
+  0% { opacity:0; transform:translateY(18rpx); letter-spacing:.28em }
+  100% { opacity:1; transform:none; letter-spacing:.06em }
+}
+@keyframes sweep { 0% { transform:translateX(-140%) } 100% { transform:translateX(140%) } }
+@keyframes rise-in { from { opacity:0; transform:translateY(14rpx) } to { opacity:1; transform:none } }
+
+.legal-intro { animation: intro-enter .55s cubic-bezier(.22,.61,.36,1) both }
+.intro-glow { animation: glow-breathe 5.2s ease-in-out infinite }
+.scales-stage { animation: stage-rise .8s cubic-bezier(.22,.61,.36,1) both }
+.halo-one { animation: halo-spin 22s linear infinite }
+.halo-two { animation: halo-spin-rev 30s linear infinite }
+.scale-beam { transform-origin:50% 50%; animation: beam-wobble 7s ease-in-out infinite }
+.scale-side .scale-pan { animation: pan-sway 7s ease-in-out infinite }
+.scale-side.side-right .scale-pan { animation-delay: .6s }
+.scale-spark.spark-one { animation: spark-twinkle 3.4s ease-in-out infinite }
+.scale-spark.spark-two { animation: spark-twinkle 4.1s ease-in-out .6s infinite }
+.scale-spark.spark-three { animation: spark-twinkle 3.8s ease-in-out 1.2s infinite }
+
+.intro-title { animation: title-in .9s cubic-bezier(.22,.61,.36,1) .12s both }
+.intro-copy { animation: rise-in .8s cubic-bezier(.22,.61,.36,1) .3s both }
+.intro-tags text { animation: rise-in .7s cubic-bezier(.22,.61,.36,1) both }
+.intro-start { animation: rise-in .8s cubic-bezier(.22,.61,.36,1) .78s both }
+.intro-note { animation: rise-in .8s cubic-bezier(.22,.61,.36,1) .92s both }

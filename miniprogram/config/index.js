@@ -1,9 +1,8 @@
-// 真机调试：手机和电脑同一 WiFi 时，用电脑局域网 IP 访问后端。
-// 上线（含体验版）必须换成 HTTPS 合法域名，或改用云托管模式。
+// 请求地址策略
+// 云托管模式：所有请求走 wx.cloud.callContainer（不需要备案域名，也不需要 HTTPS 白名单）
+// 本地调试：把 enabled 改成 false，请求打到局域网后端
 //
-// 云托管模式：不需要备案域名，请求走 wx.cloud.callContainer。
 // 已部署实例：环境 prod-d7gck81ghb168ec59 / 服务 flask-iiym（上海）。
-// 想切回局域网调试，把 enabled 改成 false。
 
 const cloudRun = {
   enabled: true,
@@ -11,4 +10,8 @@ const cloudRun = {
   service: 'flask-iiym'
 }
 
-module.exports = {baseURL: 'http://192.168.199.126:8000/api/v1', cloudRun}
+module.exports = {
+  // 云模式下不使用这个地址；保留它是为了 enabled=false 时本机联调
+  baseURL: 'http://192.168.199.126:8000/api/v1',
+  cloudRun
+}

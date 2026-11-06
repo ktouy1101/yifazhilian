@@ -2,7 +2,10 @@
 <view class="page health-page">
   <view class="hero">
     <view class="section-row"><view class="eyebrow">每一天，照顾好自己</view><button wx:if="{{active}}" class="text-button" bindtap="refresh" disabled="{{busy || loading}}">刷新</button></view>
-    <view class="hero-title">我的健康</view>
+    <view class="hero-title-row">
+      <image class="hero-mark" src="/assets/brand/logo-penguin.png" mode="aspectFit" />
+      <view class="hero-title">我的健康</view>
+    </view>
     <view class="hero-copy">整理病历资料，记录身体变化与每日用药</view>
     <view class="hero-tag">病历资料 · 健康记录 · 用药计划</view>
     <view wx:if="{{active && accessUntil}}" class="access-note">已授权 · 本机保存 · 有效至 {{accessUntil}}</view>

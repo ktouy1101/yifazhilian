@@ -3,7 +3,7 @@
 const TOKEN_KEY = 'yfz_token'
 
 Component({
-  properties:{title:{type:String,value:'医法智联'},subtitle:{type:String,value:''},
+  properties:{title:{type:String,value:'小企鹅医法智联'},subtitle:{type:String,value:''},
     back:{type:Boolean,value:false},fallback:{type:String,value:'/pages/home/index'},
     loginEntry:{type:Boolean,value:true}},
   data:{statusHeight:20,barHeight:44,rightSpace:100,loggedIn:true},

@@ -24,3 +24,78 @@ button.btn, .btn { display:inline-flex; align-items:center; justify-content:cent
 .chip.danger { background:#FCE9E7; color:#C23F34; } .chip.warn { background:#FBF2DE; color:#A9791F; }
 .press { opacity:.76; }
 .demo-caption { text-align:center; color:#8AA0A6; font-size:21rpx; line-height:1.65; padding:8rpx 0; }
+
+/* ===== 玻璃拟态视觉层（2026-11-07）=====
+   思路：背景用柔光斑做色彩，卡片用半透明白 + 磨砂 + 1rpx 高光描边。
+   backdrop-filter 在 iOS 微信可用；Android 不支持时退化为半透明白，
+   靠描边与阴影保持层次，不会变成"看不清的透明块"。 */
+page {
+  background:
+    radial-gradient(1200rpx 760rpx at 10% -8%, rgba(14,124,134,.34), transparent 60%),
+    radial-gradient(1000rpx 680rpx at 94% 2%, rgba(232,132,92,.24), transparent 58%),
+    radial-gradient(1200rpx 760rpx at 46% 106%, rgba(39,64,96,.22), transparent 60%),
+    linear-gradient(180deg, #F2F8F9 0%, #EDF4F6 45%, #F4F8F9 100%);
+  background-attachment: fixed;
+}
+
+/* 通用玻璃面板 */
+.glass {
+  background: rgba(255,255,255,.66);
+  -webkit-backdrop-filter: blur(28rpx) saturate(180%);
+  backdrop-filter: blur(28rpx) saturate(180%);
+  border: 1rpx solid rgba(255,255,255,.72);
+  box-shadow: 0 20rpx 56rpx -30rpx rgba(16,66,74,.42), inset 0 1rpx 0 rgba(255,255,255,.9);
+  border-radius: 32rpx;
+}
+
+/* 卡片统一走玻璃 */
+.card {
+  background: rgba(255,255,255,.68);
+  -webkit-backdrop-filter: blur(26rpx) saturate(180%);
+  backdrop-filter: blur(26rpx) saturate(180%);
+  border: 1rpx solid rgba(255,255,255,.72);
+  box-shadow: 0 18rpx 50rpx -30rpx rgba(16,66,74,.40), inset 0 1rpx 0 rgba(255,255,255,.9);
+  border-radius: 32rpx;
+}
+
+/* 玻璃分段控件 / 药丸按钮 */
+.tabs, .seg, .mode-switch {
+  background: rgba(255,255,255,.5);
+  -webkit-backdrop-filter: blur(18rpx);
+  backdrop-filter: blur(18rpx);
+  border: 1rpx solid rgba(255,255,255,.66);
+}
+.tabs .tab.selected, .seg .seg-item.on, .mode-switch .mode-item.on {
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 6rpx 18rpx rgba(16,66,74,.10), inset 0 1rpx 0 #fff;
+}
+
+/* 主按钮：加一层内高光，避免纯色块显得平 */
+button.btn, .btn, button.primary-button, .login-btn {
+  box-shadow: 0 22rpx 44rpx -24rpx rgba(14,124,134,.75), inset 0 1rpx 0 rgba(255,255,255,.28);
+}
+
+/* ===== 轻量动效层（2026-11-07）=====
+   只做四件事：入场渐显、卡片错峰、品牌呼吸、按压回弹。
+   全部走 transform/opacity，避免触发布局重排；时长 240–420ms。 */
+@keyframes yfz-rise { from { opacity:0; transform:translateY(16rpx) } to { opacity:1; transform:translateY(0) } }
+@keyframes yfz-fade { from { opacity:0 } to { opacity:1 } }
+@keyframes yfz-breathe {
+  0%,100% { transform:translateY(0) scale(1) }
+  50% { transform:translateY(-6rpx) scale(1.015) }
+}
+
+.card, .hero {
+  animation: yfz-rise .36s cubic-bezier(.22,.61,.36,1) both;
+}
+
+/* 品牌标识轻微呼吸，登录页与首页各一处 */
+.brand-mark, .hero-mark { animation: yfz-breathe 4.8s ease-in-out infinite }
+
+/* 按压回弹：统一给可点元素 */
+button, .nav-item, .mode-item, .tab, .seg-item, .join-link {
+  transition: transform .16s ease, background-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+button:active, .nav-item:active, .mode-item:active, .tab:active, .seg-item:active {
+  transform: scale(.972);
+}

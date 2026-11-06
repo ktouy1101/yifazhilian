@@ -5,10 +5,10 @@ const identity = require('../../../services/identity')
 const {timeText} = require('../../../utils/format')
 
 const TABS = [
-  {key: 'todo', label: '待办', icon: '◫'},
-  {key: 'queues', label: '监督', icon: '☰'},
-  {key: 'people', label: '用户', icon: '☺'},
-  {key: 'mine', label: '我的', icon: '⚙'}
+  {key: 'todo', label: '待办', icon: '/assets/icons/check-muted.png', activeIcon: '/assets/icons/check-teal.png'},
+  {key: 'queues', label: '监督', icon: '/assets/icons/shield-muted.png', activeIcon: '/assets/icons/shield-teal.png'},
+  {key: 'people', label: '用户', icon: '/assets/icons/user-muted.png', activeIcon: '/assets/icons/user-teal.png'},
+  {key: 'mine', label: '我的', icon: '/assets/icons/settings-muted.png', activeIcon: '/assets/icons/settings-teal.png'}
 ]
 const USER_FILTERS = [
   {key: 'all', label: '全部'},

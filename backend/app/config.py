@@ -79,12 +79,28 @@ def legal_mcp_fallback_enabled(environ: Mapping[str, str] | None = None) -> bool
     return values.get("YIFAZHILIAN_LEGAL_MCP_FALLBACK", "0").strip().lower() in ("1", "true", "yes", "on")
 
 
+# 云托管/云开发运行时会注入这些变量之一；此时 Host 头是内部域名，
+# 无法预先枚举，直接放行（鉴权仍由令牌保证）。
+CLOUD_RUNTIME_ENV_MARKERS = (
+    "K_SERVICE", "TCB_ENV", "WX_CLOUD_ENV", "CLOUDRUN_ENV",
+    "SCF_FUNCTIONNAME", "TCB_CONTEXT_NAMESPACE",
+)
+
+
+def in_cloud_runtime(environ: Mapping[str, str] | None = None) -> bool:
+    source = environ if environ is not None else os.environ
+    return any(str(source.get(name) or "").strip() for name in CLOUD_RUNTIME_ENV_MARKERS)
+
+
 def allowed_hosts(environ: Mapping[str, str] | None = None) -> list[str]:
     """Hosts accepted by TrustedHostMiddleware.
 
     Local development addresses stay allowed; deploying behind a domain needs
     YIFAZHILIAN_ALLOWED_HOSTS=example.com so requests are not rejected with 400.
+    在云托管里运行时（callContainer 的 Host 是内部域名）直接放行全部。
     """
+    if in_cloud_runtime(environ):
+        return ["*"]
     base = ["127.0.0.1", "localhost", "testserver", "192.168.199.126"]
     raw = (_read_kv(None, environ).get("YIFAZHILIAN_ALLOWED_HOSTS", "") or "").strip()
     extra: list[str] = []
