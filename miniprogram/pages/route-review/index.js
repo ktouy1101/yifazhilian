@@ -1,6 +1,12 @@
 const nav = require('../../services/navigation')
 const guard = require('../../utils/navigation-page')
 const EMPTY = {sub: {}, nodes: [], isReviewer: false, selfReview: false, walkthrough: false, note: '', disableReason: ''}
+function withDirectionLabel(node) {
+  const dir = node && node.direction
+  const label = (typeof dir === 'string' && dir.trim()) ? dir.trim() + '：' : ''
+  return Object.assign({}, node, {directionLabel: label})
+}
+
 Page({
   data: {...EMPTY, id: '', readonly: false, version: 0, busy: false, error: '', fbNote: '', fbCategory: 'misdirected',
     statusLabel: {draft: '草稿', submitted: '待审核', changes_requested: '需补拍', published: '已发布', disabled: '已停用'},
@@ -21,7 +27,7 @@ Page({
       const [me, sub] = await Promise.all([nav.me(), this.data.readonly ? nav.route(this.data.id) :
         this.data.version ? nav.version(this.data.id, this.data.version) : nav.getSubmission(this.data.id)])
       if (!current()) return
-      const nodes = sub.nodes.map(n => ({...n, tempPath: '', photoError: ''}))
+      const nodes = sub.nodes.map(n => withDirectionLabel({...n, tempPath: '', photoError: ''}))
       this.setData({sub, nodes, selfReview: sub.collector_id === me.user.id,
         isReviewer: !this.data.version && !this.data.readonly && me.permissions.review && sub.collector_id !== me.user.id})
       await Promise.all(nodes.map(async n => {

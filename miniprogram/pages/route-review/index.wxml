@@ -21,7 +21,7 @@
     <view class="section-title">节点与现场照片</view>
     <view wx:for="{{nodes}}" wx:key="node_key" class="review-node">
       <view class="rn-head"><text class="rn-index">{{index + 1}}</text><text class="rn-kind">{{kindLabel[item.kind]}}</text><text class="rn-floor">{{item.floor || '未填写楼层'}}</text></view>
-      <view class="rn-desc">{{item.direction}} {{item.description}}</view>
+      <view class="rn-desc">{{item.directionLabel}}{{item.description}}</view>
       <image wx:if="{{item.tempPath}}" class="rn-photo" src="{{item.tempPath}}" mode="aspectFit" data-index="{{index}}" bindtap="preview" />
       <view wx:else class="rn-nophoto">{{item.photoError || '正在读取照片…'}}</view>
     </view>
